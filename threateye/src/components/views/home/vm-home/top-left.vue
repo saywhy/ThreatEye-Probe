@@ -1,6 +1,5 @@
 <template>
-
-  <div id="status"></div>
+  <div id="sys"></div>
 </template>
 
 <script type="text/ecmascript-6">
@@ -8,115 +7,263 @@ export default {
   name: "status",
   props: {
     top_left: {
-      type: Object,
+      type: Array,
       default: () => { }
     }
   },
   data () {
     return {
-      data: {
-        dev_info: [],
-        healthy_count: 0,
-        warning_count: 0,
-        offline_count: 0
-      }
+      sys_state: [],
+      equipment_detail: {
+        show: false,
+        cpu: [],
+        mem: [],
+        disk: [],
+        statistics_time: [],
+        flow: [],
+      },
     }
   },
   created () {
     let data = this.top_left
-    this.data = data;
+    this.sys_state = data;
   },
   mounted () {
-    this.graph();
+    this.sys();
   },
   methods: {
-    graph () {
-
-      let warning_count = this.data.warning_count;
-      let healthy_count = this.data.healthy_count;
-      let offline_count = this.data.offline_count;
-      let dev_info = this.data.dev_info;
-
-     // console.log(dev_info)
-
+    sys () {
+      console.log('11111');
+      this.equipment_detail.cpu = []
+      this.equipment_detail.mem = []
+      this.equipment_detail.disk = []
+      this.equipment_detail.statistics_time = []
+      this.equipment_detail.flow = []
+      this.sys_state.forEach(element => {
+        this.equipment_detail.cpu.unshift(element.cpu)
+        this.equipment_detail.mem.unshift(element.mem)
+        this.equipment_detail.disk.unshift(element.disk)
+        this.equipment_detail.statistics_time.unshift(element.statistics_time)
+        this.equipment_detail.flow.unshift(element.flow)
+      });
+      console.log(this.sys_state);
       // 基于准备好的dom，初始化echarts实例
-      let myChart = this.$echarts.init(document.getElementById("status"));
-
-      myChart.showLoading({ text: '正在加载数据...' });
-      myChart.clear();
+      let myChart = this.$echarts.init(document.getElementById("sys"));
       // 绘制图表
       myChart.setOption({
         grid: {
-          top: "20%",
-          left: "5%",
+          top: "15%",
+          left: 20,
           right: "5%",
-          bottom: "5%",
+          bottom: "20%",
           containLabel: true
         },
+        tooltip: {
+          trigger: "axis",
+          borderColor: "rgba(2,136,209,0.3)",
+          borderWidth: 2,
+          backgroundColor: "#fff",
+          textStyle: {
+            color: "#ccc"
+          },
+          axisPointer: {
+            lineStyle: {
+              color: "#ccc"
+            }
+          }
+        },
+        legend: {
+          bottom: 5,
+          left: 'center',
+          orient: 'horizontal',
+          textStyle: {
+            fontSize: 12
+          },
+          selected: {
+            // 选中'系列1'
+            'CPU': true,
+            '内存': true,
+            '硬盘': true,
+          },
+          data: ['CPU', '内存', '硬盘']
+        },
+        xAxis: {
+          boundaryGap: false,
+          //网格样式
+          splitLine: {
+            show: true,
+            lineStyle: {
+              color: ["#F4F4F4"],
+              width: 1,
+              type: "solid"
+            }
+          },
+          axisLine: {
+            lineStyle: {
+              color: "#ECECEC",
+              width: 2
+            }
+          },
+          axisLabel: {
+            textStyle: {
+              color: "#666666"
+            }
+          },
+          axisTick: {
+            show: false
+          },
+          data: this.equipment_detail.statistics_time,
+        },
+        yAxis: [{
+          name: '单位(%)',
+          nameTextStyle: {
+            color: '#666'
+          },
+          splitLine: {
+            show: true,
+            lineStyle: {
+              color: "#F4F4F4",
+              width: 1,
+              type: "solid"
+            }
+          },
+          axisLine: {
+            lineStyle: {
+              color: "#ECECEC",
+              width: 2
+            }
+          },
+          axisLabel: {
+            textStyle: {
+              color: "#666666"
+            }
+          },
+          axisTick: {
+            show: false
+          }
+        }],
+        color: ["rgba(2,136,209,0.9)", "rgba(205,220,57,0.9)", "rgba(76,175,80,0.9)"],
+        visualMap: [{
+          show: false,
+          type: 'piecewise',
+          seriesIndex: 0,
+          pieces: [{
+            gt: 85,
+            color: '#dc5f5f'
+          }, {
+            gt: 0,
+            lte: 85,
+            color: "rgba(2,136,209,0.9)"
+          }]
+        }, {
+          show: false,
+          type: 'piecewise',
+          seriesIndex: 1,
+          pieces: [{
+            gt: 85,
+            color: '#dc5f5f'
+          }, {
+            gt: 0,
+            lte: 85,
+            color: "rgba(205,220,57,0.9)"
+          }]
+        }, {
+          show: false,
+          type: 'piecewise',
+          seriesIndex: 2,
+          pieces: [{
+            gt: 80,
+            color: '#dc5f5f'
+          }, {
+            gt: 0,
+            lte: 80,
+            color: "rgba(76,175,80,0.9)"
+          }]
+        }],
         series: [
           {
-            name: "系统状态监控",
-            type: "pie",
-            legendHoverLink: false,
-            radius: ["0%", "65%"],
-            hoverAnimation: "false",
-            hoverOffset: 0,
-            selectedOffset: 0,
-            label: {
-              normal: {
-                show: true,
-                position: "outside",
-                formatter: "{b}: {c}"
+            name: "CPU",
+            type: "line",
+            symbol: "none",
+            cursor: "pointer",
+            smooth: true,
+            data: this.equipment_detail.cpu,
+            areaStyle: {
+              color: {
+                type: "linear",
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  {
+                    offset: 0,
+                    color: "rgba(2,136,209,0.3)" // 0% 处的颜色
+                  },
+                  {
+                    offset: 1,
+                    color: "rgba(2,136,209,0.1)" // 100% 处的颜色
+                  }
+                ]
               }
-            },
-            labelLine: {
-              show: true,
-              length: 24,
-              length2: 10
-            },
-            itemStyle: {
-              // color: ["#0288D1", "#CDDC39", "#4CAF50"]
-              color: function (params) {
-                return params.data.color;
-              }
-            },
-            data: [
-              { value: warning_count, name: "预警", color: "rgba(224,200,64,1)" },
-              { value: healthy_count, name: "健康", color: "rgba(71,202,217,1)" },
-              { value: offline_count, name: "离线", color: "rgba(220,95,95,1)" }
-            ]
+            }
           },
           {
-            name: "访问来源",
-            type: "pie",
-            radius: ["65%", "80%"],
-            legendHoverLink: false,
-            hoverAnimation: "false",
-            hoverOffset: 0,
-            selectedOffset: 0,
-            label: {
-              normal: {
-                show: false,
-                position: "outside",
-                formatter: "{b}: {c}"
+            name: "内存",
+            type: "line",
+            symbol: "none",
+            cursor: "pointer",
+            smooth: true,
+            data: this.equipment_detail.mem,
+            areaStyle: {
+              color: {
+                type: "linear",
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  {
+                    offset: 0,
+                    color: "rgba(205,220,57,0.3)" // 0% 处的颜色
+                  },
+                  {
+                    offset: 1,
+                    color: "rgba(205,220,57,0.1)" // 100% 处的颜色
+                  }
+                ]
               }
-            },
-            itemStyle: {
-              color: function (params) {
-                return params.data.color;
+            }
+          },
+          {
+            name: "硬盘",
+            type: "line",
+            symbol: "none",
+            cursor: "pointer",
+            smooth: true,
+            data: this.equipment_detail.disk,
+            areaStyle: {
+              color: {
+                type: "linear",
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  {
+                    offset: 0,
+                    color: "rgba(76,175,80,0.3)" // 0% 处的颜色
+                  },
+                  {
+                    offset: 1,
+                    color: "rgba(76,175,80,0.1)" // 100% 处的颜色
+                  }
+                ]
               }
-            },
-            data: [
-              { value: warning_count, name: "预警", color: "rgba(224,200,64,.5)" },
-              { value: healthy_count, name: "健康", color: "rgba(71,202,217,.5)" },
-              { value: offline_count, name: "离线", color: "rgba(220,95,95,.5)" }
-            ]
-          }
+            }
+          },
         ]
       });
-
-      myChart.hideLoading();
-
       window.addEventListener("resize", () => {
         myChart.resize();
       });
@@ -126,7 +273,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-#status {
+#sys {
   height: 100%;
 }
 </style>

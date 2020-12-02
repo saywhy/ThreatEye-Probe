@@ -54,7 +54,7 @@ export default {
   },
   props: {
     option: {
-      type: Array,
+      type: Object,
       default: () => { }
     }
   },
@@ -67,7 +67,7 @@ export default {
   },
   methods: {
     chooseTime () {
-     // console.log(this.option);
+      // console.log(this.option);
       // console.log(this.pickerOptions.time);
       this.$emit("changeTime", this.pickerOptions.time);
     }

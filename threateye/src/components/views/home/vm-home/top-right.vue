@@ -295,22 +295,20 @@ export default {
   },
   methods: {
     graph () {
-
       let time = this.flow_statistics.time;
       let items = this.flow_statistics.items;
       // 基于准备好的dom，初始化echarts实例
       let myChart = this.$echarts.init(document.getElementById("agree"));
-
       myChart.showLoading({ text: '正在加载数据...' });
       myChart.clear();
 
       // 绘制图表
       myChart.setOption({
         grid: {
-          top: "10%",
-          left: 0,
+          top: "15%",
+          left: 20,
           right: "5%",
-          bottom: "28%",
+          bottom: "20%",
           containLabel: true
         },
         tooltip: {
@@ -332,7 +330,7 @@ export default {
           left: 5,
           orient: "horizontal",
           textStyle: {
-            fontSize: 10
+            fontSize: 12
           },
           selected: {
             // 选中'系列1'
@@ -381,6 +379,10 @@ export default {
           }),
         },
         yAxis: {
+          name: '单位(P/s)',
+          nameTextStyle: {
+            color: '#666'
+          },
           splitLine: {
             show: true,
             lineStyle: {
@@ -406,9 +408,7 @@ export default {
         },
         series: items,
       });
-
       myChart.hideLoading();
-
       window.addEventListener("resize", () => {
         myChart.resize();
       });

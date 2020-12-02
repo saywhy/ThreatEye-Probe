@@ -48,9 +48,6 @@
             </el-option>
           </el-select>
         </div>
-        <!-- <p style="margin-bottom:12px;">
-          <el-checkbox v-model="option.checked">自动与NTP服务器同步</el-checkbox>
-        </p> -->
         <div class="item">
           <p class="item_title">NTP服务器</p>
           <el-input class="select_box"
@@ -59,13 +56,42 @@
                     :disabled="disabled.ntp"
                     clearable>
           </el-input>
-          <!-- <el-button type="primary"
-                     class="btn_o margin_left">立即同步</el-button> -->
         </div>
         <el-button type="primary"
                    class="btn_i"
                    @click="save_time">保存</el-button>
       </div>
+      <!-- 分析平台设置 -->
+      <div class="bottom">
+        <p class="title">
+          <img class="titile_icon"
+               src="@/assets/images/setting/sys.png"
+               alt="">
+          <span>分析平台设置</span>
+        </p>
+        <div style="margin-bottom:24px;">
+          <div class="item_addrs">
+            <span>IP地址:</span>
+            <el-input class="select_box"
+                      placeholder="请输入IP地址"
+                      v-model="platfrom.IPADDR"
+                      clearable>
+            </el-input>
+          </div>
+          <div class="item_addrs">
+            <span>端口:</span>
+            <el-input class="select_box"
+                      placeholder="请输入端口"
+                      v-model="platfrom.PORT"
+                      clearable>
+            </el-input>
+          </div>
+        </div>
+        <el-button type="primary"
+                   class="btn_i"
+                   @click="edit_login_ip">保存</el-button>
+      </div>
+
       <div class="bottom">
         <p class="title">
           <img class="titile_icon"
@@ -285,6 +311,10 @@ export default {
         time: false,
         zone: false,
         ntp: false,
+      },
+      platfrom: {
+        IPADDR: '',
+        PORT: '',
       }
     }
   },
@@ -292,6 +322,7 @@ export default {
     this.get_data()
     this.check_passwd()
     this.get_login_ip()
+    this.get_platfrom()
   },
   methods: {
     // 测试密码过期
@@ -502,6 +533,21 @@ export default {
     },
     del_addr (item, index) {
       this.option.login_ip.splice(index, 1);
+    },
+    // 获取分析平台地址
+    get_platfrom () {
+      this.$axios.get('/yiiapi/seting/get-platform-ip')
+        .then(response => {
+          let { status, data } = response.data;
+          console.log(data);
+          console.log(status);
+          if (status == 0) {
+            this.platfrom = data.data[0]
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        })
     }
   }
 }
