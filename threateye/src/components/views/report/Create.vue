@@ -189,21 +189,35 @@ export default {
             msg,
             data
           } = resp.data;
-          if (status == '602') {
-            this.$message(
-              {
-                message: msg,
-                type: 'warning',
+          if (status != 0) {
+            for (let key in msg) {
+              if (key == 600) {
+                this.$message(
+                  {
+                    message: msg[key],
+                    type: 'warning',
+                  }
+                );
               }
-            );
-            eventBus.$emit('reset')
+              if (key == 602) {
+                this.$message(
+                  {
+                    message: msg[key],
+                    type: 'warning',
+                  }
+                );
+                eventBus.$emit('reset');
+              }
+            }
           }
         })
     },
     // 生成报表
     create () {
       console.log(this.report);
-
+      var pattern = new RegExp(
+        "[`~!#%$^&*()=|{}':;',\\[\\]<>《》/?~！#￥……&*（）|{}【】‘；：”“'。，、？]"
+      );
       if (this.report.name == '') {
         this.$message(
           {
@@ -212,6 +226,10 @@ export default {
           }
         );
         return false
+      }
+      if (pattern.test(this.report.name)) {
+        this.$message.error("报表名称不能包含特殊字符");
+        return false;
       }
       if (this.report.start_time == '' || this.report.end_time == '') {
         this.$message(
@@ -543,7 +561,8 @@ export default {
         series: [{
           // name: '高危',
           type: 'bar',
-          barWidth: 20,
+          // barWidth: 20,
+          barMaxWidth: 20,
           animation: false,
           stack: '搜索引擎',
           itemStyle: {
@@ -589,7 +608,7 @@ export default {
             show: false
           },
           axisLabel: {
-            interval: 0,
+            // interval: 2,
             rotate: '60',
             margin: 5,
             textStyle: {
@@ -612,7 +631,8 @@ export default {
         series: [{
           // name: '高危',
           type: 'bar',
-          barWidth: 20,
+          // barWidth: 20,
+          barMaxWidth: 20,
           animation: false,
           stack: '搜索引擎',
           itemStyle: {
@@ -679,7 +699,8 @@ export default {
         series: [{
           // name: '高危',
           type: 'bar',
-          barWidth: 20,
+          // barWidth: 20,
+          barMaxWidth: 20,
           animation: false,
           stack: '搜索引擎',
           itemStyle: {
@@ -934,9 +955,12 @@ export default {
   }
   #untreatedalarm_report,
   #application_protocol,
-  #alert_trend,
   #alert_type {
     border: 1px solid red;
+    width: 1000px;
+    height: 600px;
+  }
+  #alert_trend {
     width: 1000px;
     height: 600px;
   }

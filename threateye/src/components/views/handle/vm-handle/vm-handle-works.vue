@@ -11,7 +11,7 @@
             <!--搜索关键词-->
             <el-input class="s_key"
                       placeholder="搜索关键词"
-                      v-model="params.key"
+                      v-model.trim="params.key"
                       clearable>
               <i slot="prefix"
                  class="el-input__icon el-icon-search"></i>
@@ -650,7 +650,7 @@
               </li>
             </ul>
             <div>
-              <!-- 资产列表 -->
+              <!-- 资产列表:row-key="getRowKeys_edit_assets" -->
               <div v-if="edit.data.type == 'asset'">
                 <div class="tb_tolling">
                   <el-table class="common-table"
@@ -658,14 +658,17 @@
                             border
                             :data="edit.asset_list.data"
                             tooltip-effect="dark"
-                            :row-key="getRowKeys_edit_assets"
                             ref="assetTable"
-                            style="width: 100%"
-                            @selection-change="handle_sel_assets">
+                            style="width: 100%">
                     <el-table-column align="center"
-                                     :reserve-selection="true"
-                                     type="selection"
-                                     width="50"></el-table-column>
+                                     width="50">
+                      <template slot="header" slot-scope="scope">
+                        <el-checkbox v-model="edit.checked_all" @click.prevent.stop.native="checked_all_assets()"></el-checkbox>
+                      </template>
+                      <template slot-scope="scope">
+                        <el-checkbox v-model="scope.row.checked" @click.prevent.stop.native="handle_selected_assets(scope.row.checked,scope.row.id)" ></el-checkbox>
+                      </template>
+                    </el-table-column>
                     <el-table-column prop="asset_ip"
                                      align="center"
                                      label="资产"></el-table-column>
@@ -674,8 +677,7 @@
                                      label="资产组"
                                      show-overflow-tooltip></el-table-column>
                     <el-table-column label="威胁等级"
-                                     align="center"
-                                     width="100">
+                                     align="center">
                       <template slot-scope="scope">
                         <span class="btn_alert_background"
                               :class="{'high_background':scope.row.degree =='high','mid_background':scope.row.degree =='medium','low_background':scope.row.degree =='low'}">
@@ -698,7 +700,8 @@
                                layout="total, prev, pager, next">
                 </el-pagination>
               </div>
-              <!-- 告警列表 -->
+
+              <!-- 告警列表 :row-key="getRowKeys_edit_alert"-->
               <div v-if="edit.data.type == 'alert'">
                 <div class="tb_tolling">
                   <el-table class="common-table"
@@ -706,14 +709,17 @@
                             border
                             :data="edit.alert_list.data"
                             tooltip-effect="dark"
-                            :row-key="getRowKeys_edit_alert"
                             ref="alertTable"
-                            style="width: 100%"
-                            @selection-change="handle_sel_alert">
-                    <el-table-column type="selection"
-                                     :reserve-selection="true"
-                                     align="center"
+                            style="width: 100%">
+                    <el-table-column align="center"
                                      width="50">
+                      <template slot="header" slot-scope="scope">
+                        <el-checkbox v-model="edit.checked_all" @click.prevent.stop.native="checked_all_alert()" ></el-checkbox>
+                      </template>
+                      <template slot-scope="scope">
+                        <el-checkbox v-model="scope.row.checked"
+                                     @click.prevent.stop.native="handle_selected_alert(scope.row.checked,scope.row.id)" ></el-checkbox>
+                      </template>
                     </el-table-column>
                     <el-table-column prop="category"
                                      align="center"
@@ -789,6 +795,8 @@
 <script type="text/ecmascript-6">
 import VmEmergePicker from "@/components/common/vm-emerge-picker";
 import { eventBus } from '@/components/common/eventBus.js';
+
+import {isRealNum} from "@/assets/js/validate";
 export default {
   name: 'vm-handle-tabs',
   props: {
@@ -844,6 +852,13 @@ export default {
           label: "已取消"
         }
       ],
+      old_params: {
+        key: "",
+        priority: "",
+        status: "",
+        startTime: "",
+        endTime: "",
+      },
       params: {
         key: "",
         priority: "",
@@ -949,7 +964,6 @@ export default {
           new_contet: true,
         },
         data: {
-
         },
         level_list: [
           {
@@ -975,9 +989,9 @@ export default {
         table_operator: [],
         // 经办人传输数组
         // 告警和资产数组
-        handle_sel: [],
         asset_list: {},
         alert_list: {},
+        checked_all:false,
         page: 1,
         rows: 10
       }
@@ -987,6 +1001,7 @@ export default {
     VmEmergePicker
   },
   created () {
+    this.check_passwd();
     /********************************************************替换**************************************************/
     if (this.owned == 'distributed') {
       this.options_status = [
@@ -1047,6 +1062,38 @@ export default {
 
   },
   methods: {
+    // 测试密码过期
+    check_passwd () {
+      this.$axios.get('/yiiapi/site/check-passwd-reset')
+        .then((resp) => {
+          let {
+            status,
+            msg,
+            data
+          } = resp.data;
+          if(status != 0){
+            for(let key in msg){
+              if(key == 600){
+                this.$message(
+                  {
+                    message: msg[key],
+                    type: 'warning',
+                  }
+                );
+              }
+              if(key == 602){
+                this.$message(
+                  {
+                    message: msg[key],
+                    type: 'warning',
+                  }
+                );
+                eventBus.$emit('reset');
+              }
+            }
+          }
+        })
+    },
     //获取全部资产列表
     get_list_assets_info () {
       this.$axios.get('/yiiapi/workorder/asset-list', {
@@ -1104,10 +1151,8 @@ export default {
           if (status == 0) {
             let { data, count, maxPage, pageNow } = datas;
 
-            console.log(data)
             let that = this;
 
-            console.log(this.task_params.multiple_alerts)
             data.forEach(element => {
               this.table_alerts.multipleSelection.forEach(function (item) {
                 if (element.id == item.id) {
@@ -1130,35 +1175,36 @@ export default {
     //工单中心列表
     get_list_works () {
       this.table.loading = true;
-      console.log('************');
+
       let params_status = '';
 
       if (this.owned == 'created') {
-        if (this.params.status == '') {
+        if (this.old_params.status == '') {
           params_status = 'default';
-        } else if (this.params.status == 'all') {
+        } else if (this.old_params.status == 'all') {
           params_status = '';
         } else {
-          params_status = this.params.status;
+          params_status = this.old_params.status;
         }
       } else {
-        if (this.params.status == '') {
+        if (this.old_params.status == '') {
           params_status = '';
-        } else if (this.params.status == 'all') {
+        } else if (this.old_params.status == 'all') {
           params_status = '';
         } else {
-          params_status = this.params.status;
+          params_status = this.old_params.status;
         }
       }
 
       this.$axios.get('/yiiapi/workorder/list',
         {
           params: {
-            stime: this.params.startTime,
-            etime: this.params.endTime,
+            key_word: this.old_params.key,
+            stime: this.old_params.startTime,
+            etime: this.old_params.endTime,
+            priority: this.old_params.priority,
             status: params_status,
-            priority: this.params.priority,
-            key_word: this.params.key,
+
             owned: this.owned,
             page: this.table.pageNow,
             rows: this.table.eachPage
@@ -1190,27 +1236,43 @@ export default {
         this.params.startTime = (data[0].valueOf() / 1000).toFixed(0);
         this.params.endTime = (data[1].valueOf() / 1000).toFixed(0);
       } else {
-        this.params.startTime = ''
-        this.params.endTime = ''
+        this.params.startTime = '';
+        this.params.endTime = '';
       }
     },
 
     /**************************************************替换***********************************************************/
     //搜索按鈕點擊事件
     submitClick () {
+      this.table.pageNow = 1;
+
+      this.old_params.key = this.params.key;
+      this.old_params.startTime = this.params.startTime;
+      this.old_params.endTime = this.params.endTime;
+      this.old_params.priority = this.params.priority;
+      this.old_params.status = this.params.status;
+
       this.get_list_works();
     },
 
     //重置按鈕點擊事件
     resetClick () {
-      this.params = {
-        key: "",
-        priority: "",
-        status: "",
-        startTime: "",
-        endTime: ""
-      };
+      this.table.pageNow = 1;
+
+      this.params.key = '';
+      this.params.priority = '';
+      this.params.status = '';
+      this.params.startTime = '';
+      this.params.endTime = '';
+
+      this.old_params.key = this.params.key;
+      this.old_params.startTime = this.params.startTime;
+      this.old_params.endTime = this.params.endTime;
+      this.old_params.priority = this.params.priority;
+      this.old_params.status = this.params.status;
+
       $(document.querySelector('.el-button--text')).trigger('click');
+
       this.get_list_works();
     },
 
@@ -1492,11 +1554,6 @@ export default {
 
         console.log('下一步')
 
-
-
-        // if(){
-
-        // }
         this.get_list_assets_info();
         this.get_list_alerts_info();
       }
@@ -1716,14 +1773,18 @@ export default {
     },
     // 编辑工单 重写 szs --------------------------------------------------
     //打开工单新增编辑弹窗
+
+
+    /*以下ycl替换 2020/11/23*/
     //获取用户列表(经办人使用)
     open_task_edit () {
       this.$axios.get('/yiiapi/site/user-list')
         .then(resp => {
           let { status, data } = resp.data;
           if (status == 0) {
-            console.log(this.edit);
             this.edit.operator_list = data;
+
+
             if (this.edit.data.perator && this.edit.data.perator.length != 0) {
               this.edit.operator_list.forEach(element => {
                 this.edit.data.perator.forEach(item => {
@@ -1732,11 +1793,21 @@ export default {
                   }
                 });
               });
+
+              //ycl添加（09/14）去重
+              this.edit.table_operator = [...new Set(this.edit.table_operator)];
+
+
+              //ycl添加（09/14）
+              if(this.edit.table_operator.length == 1){
+                this.task_params.operator = this.edit.data.perator[0];
+              }else {
+                this.task_params.operator = '';
+              }
+              //ycl添加（09/14）
             } else {
               this.edit.table_operator = []
             }
-
-            console.log(this.edit.operator_list);
 
             this.edit.pop = true
             this.edit.task.frist = true;
@@ -1750,32 +1821,37 @@ export default {
     // 关闭弹窗
     closed_edit_pop () {
       this.edit.pop = false
+      this.edit.checked_all = false;
+      this.$refs.multipleTable.clearSelection();
     },
     // 打开编辑弹窗
-    edit_task_pop (item) {
+    edit_task_pop () {
+      this.edit.checked_all = false;
+      this.selected_list = [];
       // 初始化  // 编辑工单数据
       this.edit.data = {}
       this.edit.notice = []
       this.edit.perator = []
       this.edit.table_operator = []
       this.edit.operator_list = []
-      this.edit.handle_sel = []
       this.edit.asset_list = []
       this.edit.alert_list = []
       this.edit.page = 1
-      this.edit.rows = 10
+      this.edit.rows = 10 ///临时修改 10010000000001010101010
       let sel_table_data = this.table.multipleSelection;
+
       if (sel_table_data.length != 1) {
         this.$message({ message: '请选择一项需要编辑的工单！', type: 'warning' });
         return false;
       }
       if (sel_table_data[0].status != '0') {
         this.$message({ message: '工单状态只有‘待分配’可以被编辑！', type: 'warning' });
+        this.$refs.multipleTable.clearSelection();
         return false;
       }
-      this.edit.data = sel_table_data[0]
-      this.edit.notice = JSON.parse(this.edit.data.remind)
-      console.log(this.edit.data);
+
+      this.edit.data = sel_table_data[0];
+      this.edit.notice = JSON.parse(this.edit.data.remind);
 
       // 获取工单 资产或者告警数组---------------------------------
       this.$axios.get('/yiiapi/workorder/get-exists', {
@@ -1786,17 +1862,14 @@ export default {
         .then(resp => {
           this.selected_list = []
           let { status, data } = resp.data;
-          console.log(data);
+
           // 储存资产数组
           this.edit.data.risk_asset_cn = []
           if (data.risk_asset && data.risk_asset.length != 0) {
             this.edit.data.risk_asset_cn = data.risk_asset
             this.edit.data.risk_asset_cn.forEach(item => {
-              var obj = {
-                id: item
-              }
-              // this.edit.handle_sel.push(obj)
-              this.selected_list.push(obj)
+              // var obj = {id: item};
+              this.selected_list.push(item)
             })
           } else {
             this.edit.data.risk_asset_cn = []
@@ -1804,17 +1877,10 @@ export default {
           // 储存告警数组
           this.edit.data.risk_alert_cn = []
           if (data.te_alert && data.te_alert.length != 0) {
-            data.te_alert.forEach(element => {
-              if (element != '') {
-                this.edit.data.risk_alert_cn.push(element + '')
-              }
-              this.edit.data.risk_alert_cn.forEach(item => {
-                var obj = {
-                  id: item
-                }
-                // this.edit.handle_sel.push(obj)
-                this.selected_list.push(obj)
-              });
+            this.edit.data.risk_alert_cn = data.te_alert;
+            this.edit.data.risk_alert_cn.forEach(item => {
+              //var obj = {id: item}
+              this.selected_list.push(item)
             });
           } else {
             this.edit.data.risk_alert_cn = []
@@ -1830,7 +1896,7 @@ export default {
 
     //经办人change处理
     select_changced_edit (item) {
-      console.log(item);
+
       let level_list = this.edit.table_operator
       let selected_id_attr = level_list.map(x => { return x.id });
       if (selected_id_attr.includes(item.id)) {
@@ -1838,9 +1904,7 @@ export default {
       } else {
         this.edit.table_operator.unshift(item);
       }
-      let selected_name_attr = this.edit.table_operator.map(x => { return x.username });
-      console.log(selected_name_attr);
-
+      //let selected_name_attr = this.edit.table_operator.map(x => { return x.username });
       // this.task_params.new_operator = selected_name_attr;
     },
     //下一步时候验证工单名称，优先级、经办人等参数
@@ -1851,7 +1915,6 @@ export default {
         return false
       }
       if (pattern.test(this.edit.data.name)) {
-        console.log(true);
         this.$message.error('工单名称不能包含特殊字符');
         return false
       }
@@ -1861,23 +1924,23 @@ export default {
         this.$message.error('经办人未选择');
       } else {
         this.task.new_contet = false;
+        // console.log(this.edit.data.type)
+        this.edit.page = 1;
         if (this.edit.data.type == 'asset') {
           this.get_list_assets()
         } else if (this.edit.data.type == 'alert') {
           this.get_list_alert()
         }
-        console.log(this.edit.data.risk_asset_cn);
-        console.log(this.edit.data.risk_alert_cn);
         this.edit.task.frist = false;
-
       }
     },
     //上一步
     prev_task_handle_edit () {
       this.edit.task.frist = true;
     },
+    /****************************资产******************************/
     //获取全部资产列表
-    get_list_assets (name) {
+    get_list_assets () {
       this.$axios.get('/yiiapi/workorder/asset-list', {
         params: {
           page: this.edit.page,
@@ -1887,33 +1950,103 @@ export default {
       })
         .then((resp) => {
           let { status, data } = resp.data;
-          // console.log(data);
-          this.edit.asset_list = data
-          this.edit.asset_list.data.map(function (v, k) {
+
+          data.data.map(function (v, k) {
             v.label = JSON.parse(v.label);
             if (v.label && v.label.length) {
               v.label_group = v.label.join(',');
             } else {
               v.label_group = '';
             }
+            v.checked = false;
           });
-          if (this.edit.handle_sel.length != 0) {
-            this.selected_list.concat(this.edit.handle_sel)
-          }
+          this.edit.asset_list = data;
+
+          /*************以下是修改代码************/
+          console.log(this.selected_list);
+
           // 显示选择
           this.$nextTick(() => {
+            let checked_all_attr = [];
             this.selected_list.forEach(element => {
-              this.edit.asset_list.data.forEach((item, index) => {
-                if (element.id == item.id) {
-                  this.$refs.assetTable.toggleRowSelection(item, true);
+              this.edit.asset_list.data.forEach(item => {
+                if (element == item.id) {
+                  //this.$refs.assetTable.toggleRowSelection(item, true);
+                  item.checked = true;
+                  checked_all_attr.push(item);
                 }
               });
-            })
+            });
+
+            //判断多选是否勾选
+            if(checked_all_attr.length ==
+              this.edit.asset_list.data.length){
+              this.edit.checked_all = true;
+            }else {
+              this.edit.checked_all = false;
+            }
           });
         });
     },
+    //复选资产id处理
+    checked_all_assets () {
+      console.log('我是复选');
+      let flag = this.edit.checked_all;
+      this.edit.checked_all = !this.edit.checked_all;
+      if(flag){
+        this.edit.asset_list.data.forEach(item => {
+          item.checked = false;
+          if(this.selected_list.includes(Number(item.id))){
+            this.selected_list.splice(this.selected_list.findIndex(item_id =>
+              item_id == item.id), 1);
+          }
+        });
+      }else {
+        this.edit.asset_list.data.forEach(item => {
+          item.checked = true;
+          if(!this.selected_list.includes(Number(item.id))){
+            this.selected_list.push(Number(item.id));
+          }
+        });
+      }
+    },
+    //单选资产id处理
+    handle_selected_assets(flag,id) {
+      console.log('单选')
+      this.edit.asset_list.data.forEach(item => {
+        if (item.id == id) {
+          item.checked = !item.checked;
+        }
+      });
+      if(!flag){
+        this.selected_list.push(Number(id));
+      }else {
+        this.selected_list.splice(this.selected_list.findIndex(item_id =>
+          item_id == id), 1);
+      }
+
+      //判断多选是否勾选
+      let checked_all_attr = []
+      checked_all_attr = this.edit.asset_list.data
+        .filter(item => {
+          return item.checked == true;
+        });
+
+      if(checked_all_attr.length ==
+        this.edit.asset_list.data.length){
+        this.edit.checked_all = true;
+      }else {
+        this.edit.checked_all = false;
+      }
+    },
+    // 资产分页
+    current_change_assets (val) {
+      this.edit.page = val;
+      this.get_list_assets();
+    },
+    /***************************告警*******************************/
     //获取全部告警列表
-    get_list_alert () {
+    get_list_alert (){
       this.$axios.get('/yiiapi/workorder/alert-list', {
         params: {
           page: this.edit.page,
@@ -1923,68 +2056,113 @@ export default {
       })
         .then((resp) => {
           let { status, data } = resp.data;
+          data.data.map(v => {
+            /*if(v.src_ip != '[]'){
+              v.src_ip = JSON.parse(v.src_ip).join(',');
+            }
+            if(v.dest_ip != '[]'){
+              v.dest_ip = JSON.parse(v.dest_ip).join(',');
+            }*/
+            v.checked = false;
+          });
           this.edit.alert_list = data;
-          if (this.edit.handle_sel.length != 0) {
-            this.selected_list.concat(this.edit.handle_sel)
-          }
+
+          /*************以下是修改代码************/
           // 显示选择
           this.$nextTick(() => {
+            let checked_all_attr = [];
             this.selected_list.forEach(element => {
-              this.edit.alert_list.data.forEach((item, index) => {
-                if (element.id == item.id) {
-                  this.$refs.alertTable.toggleRowSelection(item, true);
+              this.edit.alert_list.data.forEach(item => {
+                if (element == item.id) {
+                  //this.$refs.alertTable.toggleRowSelection(item, true);
+                  item.checked = true;
+                  checked_all_attr.push(item);
                 }
               });
-            })
+            });
+
+            //判断多选是否勾选
+            if(checked_all_attr.length ==
+              this.edit.alert_list.data.length){
+              this.edit.checked_all = true;
+            }else {
+              this.edit.checked_all = false;
+            }
           });
         });
     },
-    getRowKeys (row) {
-      return row.id;
-    },
-    // 选择资产列表
-    handle_sel_assets (val) {
-      this.edit.handle_sel = val
-    },
-    // 选择告警列表
-    handle_sel_alert (val) {
-      this.edit.handle_sel = val
-    },
-
-    removeByValue (arr, val) {
-      for (var i = 0; i < arr.length; i++) {
-        if (arr[i] == val) {
-          arr.splice(i, 1);
-          break;
-        }
+    //复选告警id处理
+    checked_all_alert(){
+      console.log('我是复选');
+      let flag = this.edit.checked_all;
+      this.edit.checked_all = !this.edit.checked_all;
+      if(flag){
+        this.edit.alert_list.data.forEach(item => {
+          item.checked = false;
+          if(this.selected_list.includes(Number(item.id))){
+            this.selected_list.splice(this.selected_list.findIndex(item_id =>
+              item_id == item.id), 1);
+          }
+        });
+      }else {
+        this.edit.alert_list.data.forEach(item => {
+          item.checked = true;
+          if(!this.selected_list.includes(Number(item.id))){
+            this.selected_list.push(Number(item.id));
+          }
+        });
       }
-      return arr
     },
-    // 资产分页
-    current_change_assets (val) {
-      this.edit.page = val
-      this.get_list_assets();
+    //单选告警id处理
+    handle_selected_alert(flag,id) {
+      console.log('单选')
+      this.edit.alert_list.data.forEach(item => {
+        if (item.id == id) {
+          item.checked = !item.checked;
+        }
+      });
+      if(!flag){
+        this.selected_list.push(Number(id));
+      }else {
+        this.selected_list.splice(this.selected_list.findIndex(item_id =>
+          item_id == id), 1);
+      }
+
+      //判断多选是否勾选
+      let checked_all_attr = []
+      checked_all_attr = this.edit.alert_list.data.filter(item => {
+        return item.checked == true;
+      });
+
+      if(checked_all_attr.length ==
+        this.edit.alert_list.data.length){
+        this.edit.checked_all = true;
+      }else {
+        this.edit.checked_all = false;
+      }
     },
     // 告警分页
     current_change_alert (val) {
-      this.edit.page = val
+      this.edit.page = val;
       this.get_list_alert();
     },
+    /**************************************************************/
     //编辑工单保存
     prev_task_handle_save_edit () {
-      console.log(this.edit.handle_sel);
-
-
       this.edit.table_operator.forEach(element => {
         this.edit.perator.push(element.username)
       });
-      var handle_sel_list = []
-      this.edit.handle_sel.forEach(element => {
-        handle_sel_list.push(element.id)
+      this.selected_list = this.selected_list.map(v => {
+        if(isRealNum(v)){
+          v = v.toString();
+        }
+        return v;
       });
+      var handle_sel_list = this.selected_list;
 
-      handle_sel_list = handle_sel_list.concat(this.selected_list)
-      handle_sel_list = [...new Set(handle_sel_list)];
+      //ycl添加（09/14）
+      this.edit.perator = [...new Set(this.edit.perator)];
+
       let all_params = {
         workorder_edit: '1',
         id: this.edit.data.id,
@@ -2008,18 +2186,28 @@ export default {
         // }
         all_params.te_alert = handle_sel_list
       }
-      console.log(all_params);
-      this.handle.save = true
+      if(this.edit.data.type == 'asset'){
+        if(handle_sel_list.length == 0){
+          this.$message({ message: '请至少选择一条资产！', type: 'warning' });
+          return false;
+        }
+      }else {
+        if(handle_sel_list.length == 0){
+          this.$message({ message: '请至少选择一条告警！', type: 'warning' });
+          return false;
+        }
+      }
+
+      this.handle.save = true;
       this.$axios.post('/yiiapi/workorder/add', all_params)
         .then((resp) => {
           this.handle.save = false
           let { status, msg, data } = resp.data;
-          console.log(resp);
           // "存在已被创建工单的资产"
           if (resp.data.status == 0) {
-            this.$message.success('修改成功');
+            this.$message.success('保存成功');
             this.get_list_works();
-            this.edit.pop = false
+            this.edit.pop = false;
           } else {
             this.$message.error(resp.data.msg);
           }
@@ -2034,12 +2222,18 @@ export default {
       this.edit.table_operator.forEach(element => {
         this.edit.perator.push(element.username)
       });
-      var handle_sel_list = []
-      this.edit.handle_sel.forEach(element => {
-        handle_sel_list.push(element.id)
+      this.selected_list = this.selected_list.map(v => {
+        if(isRealNum(v)){
+          v = v.toString();
+        }
+        return v;
       });
-      handle_sel_list = handle_sel_list.concat(this.selected_list)
-      handle_sel_list = [...new Set(handle_sel_list)];
+
+      var handle_sel_list = this.selected_list;
+
+      //ycl添加（09/14）
+      this.edit.perator = [...new Set(this.edit.perator)];
+
       let all_params = {
         workorder_edit: '1',
         id: this.edit.data.id,
@@ -2063,19 +2257,16 @@ export default {
         // }
         all_params.te_alert = handle_sel_list
       }
-      console.log(all_params);
-      this.handle.save = true
       this.$axios.put('/yiiapi/workorder/distribution', all_params)
         .then((resp) => {
           this.handle.save = false
           let { status, msg, data } = resp.data;
-          console.log(resp);
           // "存在已被创建工单的资产"
           if (resp.data.status == 0) {
-            this.$message.success('修改成功');
+            this.$message.success('分配成功');
             eventBus.$emit('num')
             this.get_list_works();
-            this.edit.pop = false
+            this.edit.pop = false;
           } else {
             this.$message.error(resp.data.msg);
           }

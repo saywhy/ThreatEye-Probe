@@ -28,7 +28,6 @@ import '../node_modules/echarts/map/js/world.js'
 
 Vue.use(uploader)
 
-
 // 引入http
 import {
   post,
@@ -55,8 +54,18 @@ Vue.use(gl_component);
 
 import '@/components/filters/index'
 
-
 import './assets/css/index.css'
+
+Vue.prototype.validSe = function (value, number = 255) {
+  value = value.replace(/[`~!@#$%^&*()_\-+=<>?:"{}|,./;'\\[\]·~！@#￥%……&*（）——\-+={}|《》？：“”【】、；‘’，。、]/g, '').replace(/\s/g, "");
+  if (value.length >= number) {
+    this.$message({
+      type: "warning",
+      message: `输入内容不能超过${number}个字符`
+    });
+  }
+  return value;
+}
 
 
 Vue.config.productionTip = false;
@@ -83,8 +92,8 @@ router.beforeEach((to, from, next) => {
             store.dispatch('LogOut');
           } else {
             store.dispatch('GenerateRoutes', {
-                roles
-              })
+              roles
+            })
               .then(() => { // 生成可访问的路由表
 
                 router.addRoutes(store.getters.addRouters) // 动态添加可访问路由表

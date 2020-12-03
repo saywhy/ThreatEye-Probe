@@ -12,11 +12,10 @@
     <div class="alert_risk">
       <el-form class="common-pattern">
         <h3 class="title">告警监测</h3>
-        <el-row class="common_box"
-                style="padding: 15px 0;">
-          <el-col :span="24"
+        <el-row class="common_box" style="padding: 15px 0;">
+          <!--<el-col :span="24"
                   class="common_box_list">
-            <!--搜索关键词-->
+            &lt;!&ndash;搜索关键词&ndash;&gt;
             <el-input class="s_key"
                       placeholder="搜索关键词"
                       v-model="params.key"
@@ -24,9 +23,9 @@
               <i slot="prefix"
                  class="el-input__icon el-icon-search"></i>
             </el-input>
-            <!--时间-->
+            &lt;!&ndash;时间&ndash;&gt;
             <vm-emerge-picker @changeTime='changeTime'></vm-emerge-picker>
-            <!--失陷确定性-->
+            &lt;!&ndash;失陷确定性&ndash;&gt;
             <el-select class="s_key s_key_types"
                        v-model="params.threat"
                        clearable
@@ -38,7 +37,7 @@
                          :value="item.value">
               </el-option>
             </el-select>
-            <!--威胁等级-->
+            &lt;!&ndash;威胁等级&ndash;&gt;
             <el-select class="s_key"
                        v-model="params.degree"
                        clearable
@@ -50,7 +49,7 @@
                          :value="item.value">
               </el-option>
             </el-select>
-            <!--处理状态-->
+            &lt;!&ndash;处理状态&ndash;&gt;
             <el-select class="s_key"
                        v-model="params.status"
                        clearable
@@ -69,10 +68,113 @@
 
             <el-button class="s_btn_edit"
                        @click="export_box">导出</el-button>
+          </el-col>-->
+          <!--1-->
+          <el-col :span="24" class="common_box_list">
+
+            <!--告警类型-->
+            <el-input class="s_key1"
+                      placeholder="告警类型"
+                      v-model.trim="params.category"
+                      clearable>
+              <i slot="prefix"
+                 class="el-input__icon el-icon-search"></i>
+            </el-input>
+
+            <!--威胁指标-->
+            <el-input class="s_key1"
+                      placeholder="威胁指标"
+                      v-model.trim="params.indicator"
+                      clearable>
+              <i slot="prefix"
+                 class="el-input__icon el-icon-search"></i>
+            </el-input>
+
+            <!--告警时间-->
+            <vm-emerge-picker @changeTime='changeTime'></vm-emerge-picker>
+
+            <!--失陷确定性-->
+            <el-select class="s_key1 s_key1_ok"
+                       v-model="params.fall_certainty"
+                       clearable
+                       placeholder="失陷确定性"
+                       :popper-append-to-body="false">
+              <el-option v-for="item in options_certainty"
+                         :key="item.value"
+                         :label="item.label"
+                         :value="item.value">
+              </el-option>
+            </el-select>
+
+            <!--处理状态-->
+            <el-select class="s_key1"
+                       v-model="params.status"
+                       clearable
+                       placeholder="处理状态"
+                       :popper-append-to-body="false">
+              <el-option v-for="item in options_status"
+                         :key="item.value"
+                         :label="item.label"
+                         :value="item.value">
+              </el-option>
+            </el-select>
+
+            <!--威胁等级-->
+            <el-select class="s_key1"
+                       v-model="params.degree"
+                       clearable
+                       placeholder="威胁等级"
+                       :popper-append-to-body="false">
+              <el-option v-for="item in options_degree"
+                         :key="item.value"
+                         :label="item.label"
+                         :value="item.value">
+              </el-option>
+            </el-select>
+          </el-col>
+          <!--2-->
+          <el-col :span="24" class="common_box_list common_box_list_network">
+
+            <!--源地址-->
+            <el-input class="s_key1"
+                      placeholder="源地址"
+                      v-model.trim="params.src_ip"
+                      clearable>
+              <i slot="prefix"
+                 class="el-input__icon el-icon-search"></i>
+            </el-input>
+
+            <!--目的地址-->
+            <el-input class="s_key1"
+                      placeholder="目的地址"
+                      v-model.trim="params.dest_ip"
+                      clearable>
+              <i slot="prefix"
+                 class="el-input__icon el-icon-search"></i>
+            </el-input>
+
+            <!--更新时间-->
+            <vm-emerge-picker1 @changeTime1='changeTime1'></vm-emerge-picker1>
+
+            <!--标签-->
+            <el-input class="s_key1 s_key1_ok"
+                      placeholder="标签"
+                      v-model.trim="params.label"
+                      clearable>
+              <i slot="prefix"
+                 class="el-input__icon el-icon-search"></i>
+            </el-input>
+
+            <el-button class="s_btn s_btn1_ok"
+                       @click="submitClick();">搜索</el-button>
+            <el-link class="s_link"
+                     @click="resetClick();">重置</el-link>
+            <el-button class="s_btn_edit"
+                       @click="export_box">导出</el-button>
           </el-col>
         </el-row>
         <!--按钮组-->
-        <el-row class="common_btn">
+        <el-row class="common_btn" style="width: 100%;">
           <el-col :span="24"
                   class="common_btn_list">
             <el-dropdown @command="change_state"
@@ -111,15 +213,52 @@
               </el-dropdown-menu>
             </el-dropdown>
 
+
+            <!--配置列-->
+            <el-dropdown class="e_deplay"
+                         trigger="click"
+                         ref="messageDrop"
+                         @visible-change="dropdown_hide">
+              <span class="s_btn_train">
+                <i class="t_img"></i>
+                <span class="t_name">配置列</span>
+              </span>
+              <el-dropdown-menu class="s_btn_list"
+                                slot="dropdown"
+                                style="padding: 20px;">
+                <span class="s_b_name">展示字段</span>
+                <ul class="s_b_list">
+                  <li class="item"
+                      v-for="(item,$index) in fieldList"
+                      :key="$index">
+                    <el-checkbox v-model="item.checked"
+                                 :disabled="item.disabled"
+                                 @change="fieldChange(item.alias,item.name)">{{item.name}}
+                    </el-checkbox>
+                  </li>
+                </ul>
+                <div class="s_b_group">
+                  <el-button type="primary"
+                             class="s_bg s_bg_cancel"
+                             @click.native="label_cancel_Click()">取消</el-button>
+                  <el-button type="primary"
+                             class="s_bg s_bg_submit"
+                             @click.native="label_submit_click()">确认</el-button>
+                </div>
+              </el-dropdown-menu>
+            </el-dropdown>
+
           </el-col>
         </el-row>
       </el-form>
-      <el-row class="common-table-pattern">
+      <!--:render-header="col"         :key="randomKey"-->
+      <el-row class="common-table-pattern table_wrap">
         <el-col :span="24">
           <el-table ref="multipleTable"
                     align="center"
                     border
-                    class="common-table"
+                    id="table_wrap_alert"
+                    class="common-table common-table_alert"
                     v-loading="table.loading"
                     :data="table.tableData"
                     :row-style="{cursor:'pointer'}"
@@ -128,70 +267,92 @@
                     @mouseup.native="mouseup"
                     @selection-change="handleSelChange"
                     @header-click="header_click"
+                    @sort-change="header_cell"
+                    @header-dragend="headerDragend"
+                    row-key="id"
+                    :key="randomKey"
                     @row-click="detail_click">
             <el-table-column label=" "
+                             fixed="left"
                              align="center"
                              prop="type"
-                             width="20">
+                             :resizable="false"
+                             width="30">
               <template slot-scope="scope">
                 <div class="new_dot"
                      v-show="scope.row.new_alert=='1'"></div>
               </template>
             </el-table-column>
             <el-table-column type="selection"
+                             fixed="left"
                              align="center"
-                             width="50"></el-table-column>
-            <el-table-column label="告警时间"
-                             align="center"
-                             width="200"
-                             show-overflow-tooltip>
-              <template slot-scope="scope">{{ scope.row.alert_time | time }}</template>
+                             width="50"
+                             :resizable="false">
             </el-table-column>
-            <el-table-column prop="category"
-                             align="center"
-                             label="告警类型"
-                             width="100"
-                             show-overflow-tooltip></el-table-column>
-            <el-table-column prop="indicator"
-                             align="center"
-                             label="威胁指标"
-                             min-width="120"
-                             show-overflow-tooltip></el-table-column>
-            <el-table-column prop="src_ip"
-                             align="center"
-                             label="源地址"
-                             show-overflow-tooltip></el-table-column>
-            <el-table-column prop="dest_ip"
-                             align="center"
-                             label="目的地址"
-                             show-overflow-tooltip></el-table-column>
-            <el-table-column prop="application"
-                             align="center"
-                             label="应用"
-                             width="60"
-                             show-overflow-tooltip></el-table-column>
-            <el-table-column label="威胁等级"
-                             align="center"
-                             width="100">
-              <template slot-scope="scope">
-                <span class="btn_alert_background"
-                      :class="{'high_background':scope.row.degree =='高','mid_background':scope.row.degree =='中','low_background':scope.row.degree =='低'}">
-                  {{ scope.row.degree | degree_sino }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="失陷确定性"
-                             align="center"
-                             width="120">
-              <template slot-scope="scope">
-                <span :class="{'fall_certainty':scope.row.fall_certainty == '1'}">
-                  {{ scope.row.fall_certainty | certainty }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="状态"
-                             align="center"
-                             width="80">
-              <template slot-scope="scope">{{ scope.row.status | alert_status }}</template>
-            </el-table-column>
+            <!--:key="`col_${index}`"-->
+            <template v-for="(item, index) in dropCol">
+              <!--告警时间-->
+              <el-table-column align="center"
+                               v-if="dropCol[index].prop == 'alert_time'"
+                               show-overflow-tooltip
+                               min-width="150"
+                               :prop="dropCol[index].prop"
+                               :label="item.label">
+                <template slot-scope="scope">{{ scope.row.alert_time | time }}</template>
+              </el-table-column>
+              <!--威胁等级-->
+              <el-table-column align="center"
+                               v-else-if="dropCol[index].prop == 'degree'"
+                               show-overflow-tooltip
+                               sortable="custom"
+                               min-width="100"
+                               :prop="dropCol[index].prop"
+                               :label="item.label">
+                <template slot-scope="scope">
+                  <span class="btn_alert_background"
+                        :class="{'high_background':scope.row.degree =='高',
+                        'mid_background':scope.row.degree =='中','low_background':scope.row.degree =='低'}">
+                    {{ scope.row.degree | degree_sino }}</span>
+                </template>
+              </el-table-column>
+              <!--失陷确定性-->
+              <el-table-column align="center"
+                               v-else-if="dropCol[index].prop == 'fall_certainty'"
+                               show-overflow-tooltip
+                               :prop="dropCol[index].prop"
+                               :label="item.label">
+                <template slot-scope="scope">
+                  <span :class="{'fall_certainty':scope.row.fall_certainty == '1'}">
+                    {{ scope.row.fall_certainty | certainty }}</span>
+                </template>
+              </el-table-column>
+              <!--状态-->
+              <el-table-column align="center"
+                               v-else-if="dropCol[index].prop == 'status'"
+                               show-overflow-tooltip
+                               :prop="dropCol[index].prop"
+                               :label="item.label">
+                <template slot-scope="scope">{{ scope.row.status | alert_status }}</template>
+              </el-table-column>
+              <!--更新时间-->
+              <el-table-column align="center"
+                               v-else-if="dropCol[index].prop == 'updated_at'"
+                               show-overflow-tooltip
+                               sortable="custom"
+                               min-width="150"
+                               :prop="dropCol[index].prop"
+                               :label="item.label">
+                <template slot-scope="scope">{{ scope.row.updated_at | time }}</template>
+              </el-table-column>
+              <!--其他-->
+              <el-table-column align="center"
+                               v-else
+                               min-width="100"
+                               show-overflow-tooltip
+                               :prop="dropCol[index].prop"
+                               :label="item.label">
+              </el-table-column>
+            </template>
           </el-table>
         </el-col>
         <el-col :span="24"
@@ -533,32 +694,70 @@
 <script type="text/ecmascript-6">
 import vmEmergeLine from "./vm-emerge/vm-emerge-line";
 import vmEmergePicker from "@/components/common/vm-emerge-picker";
+import vmEmergePicker1 from "@/components/common/vm-emerge-picker1";
 import { eventBus } from '@/components/common/eventBus.js';
+//拖拽
+import Sortable from 'sortablejs';
 export default {
   name: "Network",
   components: {
     vmEmergeLine,
-    vmEmergePicker
+    vmEmergePicker,
+    vmEmergePicker1
   },
   data () {
     return {
+      randomKey: 0,
+      dropCol: [],
+      fieldFlag: false,
+      fieldList: [{ checked: true, disabled: true, name: "告警时间", alias: 'alert_time' },
+        { checked: true, disabled: true, name: "告警类型", alias: 'category' },
+        { checked: true, disabled: true, name: "源地址", alias: 'src_ip' },
+        { checked: true, disabled: true, name: "目的地址", alias: 'dest_ip' },
+        { checked: true, disabled: false, name: "威胁指标", alias: 'indicator' },
+        { checked: true, disabled: false, name: "应用", alias: 'application' },
+        { checked: true, disabled: false, name: "威胁等级", alias: 'degree' },
+        { checked: true, disabled: false, name: "失陷确定性", alias: 'fall_certainty' },
+        { checked: false, disabled: false, name: "更新时间", alias: 'updated_at' },
+        { checked: false, disabled: false, name: "告警次数", alias: 'alert_count' },
+        { checked: false, disabled: false, name: "标签", alias: 'labels' },
+        { checked: true, disabled: false, name: "状态", alias: 'status' }],
+      sortable:null,
       echarts_data: {},
       e_line: {
         loading: true,
         data_show: false,
       },
-      picker_data: {
-        time: [new Date(2000, 10, 10, 10, 10), new Date(2000, 10, 11, 10, 10)]
+      old_params:{
+        category:'',
+        indicator: '',
+        start_time: '',
+        end_time: '',
+        fall_certainty: '',
+        status: '',
+        degree: '',
+        src_ip: '',
+        dest_ip: '',
+        update_stime: '',
+        update_etime:'',
+        label: ''
       },
       params: {
-        key: "",
-        threat: "",
-        status: "",
-        startTime: '',
-        endTime: '',
-        degree: ''
+        fall_certainty: '',
+        status: '',
+        degree: '',
+        start_time: '',
+        end_time: '',
+        category:'',
+        indicator: '',
+        src_ip: '',
+        dest_ip: '',
+        update_stime: '',
+        update_etime:'',
+        label: '',
+        sort:'degree'
       },
-      options_degrees: [
+      options_degree: [
         {
           value: "low",
           label: "低危"
@@ -572,7 +771,7 @@ export default {
           label: "高危"
         }
       ],
-      options_threat: [
+      options_certainty: [
         {
           value: "1",
           label: "已失陷"
@@ -624,7 +823,6 @@ export default {
       //弹窗部分
       state_change: false,
       process_state: "",
-
       //工单任务
       task: {
         new: false,
@@ -719,8 +917,12 @@ export default {
   },
   mounted () {
     this.check_passwd();
+
     this.get_echarts();
+
     this.get_list_risk();
+
+    this.column_deploy();
   },
   methods: {
     // 测试密码过期
@@ -743,6 +945,7 @@ export default {
           }
         })
     },
+
     // 获取折现图表
     get_echarts () {
       this.$axios.get('/yiiapi/alert/alert-trend')
@@ -760,25 +963,151 @@ export default {
           console.log(error);
         })
     },
+
+    /**
+    * 2020/10/28ycl新加功能
+    * */
+    //配置到
+    column_deploy () {
+      this.$axios.get('/yiiapi/site/field-list')
+        .then((resp) => {
+          // console.log(resp);
+          this.dropCol = [];
+          let { status, data } = resp.data;
+          if (status == 0) {
+            let config = data.config.fields;
+
+           // console.log(config)
+            for (var key of config) {
+
+              this.fieldList.forEach(item => {
+                if (item.alias == key) {
+                  this.dropCol.push({ label: item.name, prop: item.alias })
+                }
+              });
+            }
+
+            this.fieldList.forEach(item => {
+              if (config.includes(item.alias)) {
+                item.checked = true;
+              } else {
+                item.checked = false;
+              }
+            });
+            this.columnDrop();
+          }
+        });
+    },
+
+    //下拉框勾选事件
+    fieldChange (alias, name) {
+      let colAttr = this.dropCol.map((item) => {
+        return item.prop;
+      });
+      if (colAttr.includes(alias)) {
+        var index = colAttr.findIndex((element) => (element == alias));
+        this.dropCol.splice(index, 1);
+      } else {
+        this.dropCol.push({ label: name, prop: alias });
+      }
+    },
+
+    //列拖拽
+    columnDrop () {
+      const wrapperTr = document.querySelector('.common-table_alert tr');
+      this.sortable = Sortable.create(wrapperTr, {
+        only: '.table_wrap',
+        animation: 180,
+        preventOnFilter:true,
+        delay: 0,
+        onEnd: evt => {
+          let newIndex = evt.newIndex - 2;
+          let oldIndex = evt.oldIndex - 2;
+          const oldItem = this.dropCol[oldIndex];
+          this.dropCol.splice(oldIndex, 1);
+          this.dropCol.splice(newIndex, 0, oldItem);
+
+          this.label_submit_click();
+
+          this.randomKey += 1;
+
+         // this.sortable.destroy();
+        }
+      });
+    },
+
+    //配置到取消
+    label_cancel_Click () {
+      this.$refs.messageDrop.hide();
+      this.column_deploy();
+      this.get_list_risk();
+    },
+
+    //配置到确定
+    label_submit_click (args) {
+      let fieldAttr = [];
+      fieldAttr = this.dropCol.map(item => {
+        return item.prop;
+      });
+
+      this.$axios.put('/yiiapi/site/field-edit', {
+        fields: fieldAttr
+      })
+        .then((resp) => {
+
+          let { status, msg, data } = resp.data;
+
+          if (status == 0) {
+            this.$refs.messageDrop.hide();
+            //this.table.pageNow = 1;
+            this.get_list_risk();
+
+            this.randomKey += 1;
+          } else {
+            this.$message({
+              message: '修改错误！',
+              type: 'error',
+            });
+          }
+        });
+    },
+
+    //配置列弹窗关闭事件
+    dropdown_hide (val) {
+      if (!val) {this.label_cancel_Click();}
+    },
+    /**
+     * 2020/10/28ycl新加功能
+     * */
     // 获取告警列表
     get_list_risk () {
       this.table.loading = true;
+
       let params_alert = {
-        threat: ''
+        fall_certainty: ''
       };
-      if (this.params.threat == 1) {
-        params_alert.threat = 1;
+      if (this.old_params.fall_certainty == 1) {
+        params_alert.fall_certainty = 1;
       }
+
       this.$axios.get('/yiiapi/alert/list', {
         params: {
-          start_time: this.params.startTime,
-          end_time: this.params.endTime,
-          key_word: this.params.key,
-          fall_certainty: params_alert.threat,
-          status: this.params.status,
-          degree: this.params.degree,
+          category:this.old_params.category,
+          indicator:this.old_params.indicator,
+          start_time: this.old_params.start_time,
+          end_time: this.old_params.end_time,
+          fall_certainty: params_alert.fall_certainty,
+          status: this.old_params.status,
+          degree: this.old_params.degree,
+          src_ip:this.old_params.src_ip,
+          dest_ip:this.old_params.dest_ip,
+          update_stime:this.old_params.update_stime,
+          update_etime:this.old_params.update_etime,
+          label:this.old_params.label,
+
+          sort: this.params.sort,
           page: this.table.pageNow,
-          rows: this.table.eachPage,
+          rows: this.table.eachPage
         }
       }).then(resp => {
 
@@ -791,44 +1120,94 @@ export default {
 
           let { data, count, maxPage, pageNow } = datas;
 
+          data.map(v => {
+            v.labels = v.labels.join(',');
+          });
+
           this.table.tableData = data;
           this.table.count = count;
           this.table.maxPage = maxPage;
           this.table.pageNow = pageNow;
-          //console.log(data)
+
+          this.columnDrop();
         }
       })
         .catch(error => {
           console.log(error);
         })
     },
-
+    //告警时间
     changeTime (data) {
       if (data) {
-        this.params.startTime = (data[0].valueOf() / 1000).toFixed(0);
-        this.params.endTime = (data[1].valueOf() / 1000).toFixed(0);
+        this.params.start_time = (data[0].valueOf() / 1000).toFixed(0);
+        this.params.end_time = (data[1].valueOf() / 1000).toFixed(0);
       } else {
-        this.params.startTime = ''
-        this.params.endTime = ''
+        this.params.start_time = '';
+        this.params.end_time = '';
+      }
+    },
+    //更新时间
+    changeTime1 (data) {
+      if (data) {
+        this.params.update_stime = (data[0].valueOf() / 1000).toFixed(0);
+        this.params.update_etime = (data[1].valueOf() / 1000).toFixed(0);
+      } else {
+        this.params.update_stime = '';
+        this.params.update_etime = '';
       }
     },
 
     //搜索按鈕點擊事件
     submitClick () {
+      this.table.pageNow = 1;
+
+      this.old_params.category = this.params.category;
+      this.old_params.indicator = this.params.indicator;
+      this.old_params.start_time = this.params.start_time;
+      this.old_params.end_time = this.params.end_time;
+      this.old_params.fall_certainty = this.params.fall_certainty;
+      this.old_params.status = this.params.status;
+      this.old_params.degree = this.params.degree;
+      this.old_params.src_ip = this.params.src_ip;
+      this.old_params.dest_ip = this.params.dest_ip;
+      this.old_params.update_stime = this.params.update_stime;
+      this.old_params.update_etime = this.params.update_etime;
+      this.old_params.label = this.params.label;
+
       this.get_list_risk();
     },
 
     //重置按鈕點擊事件
     resetClick () {
-      this.params = {
-        key: "",
-        threat: "",
-        status: "",
-        startTime: '',
-        endTime: '',
-        degree: ''
-      };
-      $(document.querySelector('.el-button--text')).trigger('click');
+      this.params.fall_certainty = '';
+      this.params.status = '';
+      this.params.degree = '';
+      this.params.start_time = '';
+      this.params.end_time = '';
+      this.params.category = '';
+      this.params.indicator = '';
+      this.params.src_ip = '';
+      this.params.dest_ip = '';
+      this.params.update_stime = '';
+      this.params.update_etime = '';
+      this.params.label = '';
+      //this.params.sort = 'degree';
+
+      this.old_params.category = this.params.category;
+      this.old_params.indicator = this.params.indicator;
+      this.old_params.start_time = this.params.start_time;
+      this.old_params.end_time = this.params.end_time;
+      this.old_params.fall_certainty = this.params.fall_certainty;
+      this.old_params.status = this.params.status;
+      this.old_params.degree = this.params.degree;
+      this.old_params.src_ip = this.params.src_ip;
+      this.old_params.dest_ip = this.params.dest_ip;
+      this.old_params.update_stime = this.params.update_stime;
+      this.old_params.update_etime = this.params.update_etime;
+      this.old_params.label = this.params.label;
+
+      $(document.querySelectorAll('.el-button--text')).trigger('click');
+      this.table.pageNow = 1;
       this.get_list_risk();
     },
 
@@ -858,6 +1237,35 @@ export default {
     header_click (val) {
       this.detail_click_val = {}
     },
+    headerDragend(evt){
+      console.log('headerDragend')
+      //this.randomKey += 1;
+      if(this.sortable){
+        //this.sortable.destroy()
+
+        //console.log(this.sortable)
+
+       // this.sortable = null;
+      }
+
+      setTimeout(() => {
+        console.log('444')
+        this.columnDrop();
+
+      },500)
+    },
+    //列排序
+    header_cell (val) {
+
+      if(val.prop == 'updated_at'){
+        this.params.sort = 'updated_at';
+      }else if(val.prop == 'degree'){
+        this.params.sort = 'degree';
+      }else {
+        this.params.sort = 'degree';
+      }
+      this.get_list_risk();
+    },
     mousedown (event) {
       this.oldPositon = {
         x: '',
@@ -873,6 +1281,7 @@ export default {
     mouseup (event) {
       this.newPositon.x = event.clientX;
       this.newPositon.y = event.clientY;
+
       if (this.oldPositon.x == this.newPositon.x) {
         setTimeout(() => {
           if (this.detail_click_val.id) {
@@ -888,10 +1297,8 @@ export default {
         console.log('复制');
       }
     },
-
     /***********************************以下是弹窗部分****************************************/
     /***********************************以下是弹窗部分****************************************/
-
     // 状态变更选择
     change_state (command) {
       this.process_state = command;
@@ -1361,8 +1768,21 @@ export default {
                 }
               })
                 .then(response => {
-                  var url1 = "/yiiapi/alert/export-alerts?status=" + this.params.status + '&start_time=' + this.params.startTime
-                    + '&end_time=' + this.params.endTime + '&fall_certainty=' + this.params.threat + '&key_word=' + this.params.key;
+
+                  var url1 = "/yiiapi/alert/export-alerts?start_time=" + this.old_params.start_time
+                    + '&end_time=' + this.old_params.end_time
+                    + '&fall_certainty=' + this.old_params.fall_certainty
+                    + '&status=' + this.old_params.status
+                    + '&degree=' + this.old_params.degree
+                    + '&page=' + this.table.pageNow
+                    + '&rows=' + this.table.eachPage
+                    + '&category=' + this.old_params.category
+                    + '&indicator=' + this.old_params.indicator
+                    + '&src_ip=' + this.old_params.src_ip
+                    + '&dest_ip=' + this.old_params.dest_ip
+                    + '&update_stime=' + this.old_params.update_stime
+                    + '&update_etime=' + this.old_params.update_etime
+                    + '&label=' + this.old_params.label;
                   window.location.href = url1;
                 })
                 .catch(error => {
@@ -1381,323 +1801,410 @@ export default {
 </script>
 
 <style scoped lang="less">
-@import '../../../assets/css/less/common-pattern.less';
-@import '../../../assets/css/less/common-table-pattern.less';
-#Network {
-  text-align: left;
-  padding: 24px;
-  .e_line {
-    height: 322px;
-    background: #ffffff;
-    border-radius: 4px;
-    position: relative;
-    .title {
-      text-align: left;
-      font-size: 18px;
-      color: #333;
-      position: absolute;
-      top: 12px;
-      left: 24px;
-    }
-  }
-  .alert_risk {
-    border-radius: 4px;
-    margin-top: 20px;
-    padding: 20px 24px;
-    height: auto;
-    background: #fff;
+  @import '../../../assets/css/less/common-pattern.less';
+  @import '../../../assets/css/less/common-table-pattern.less';
+  #Network {
     text-align: left;
-  }
-
-  /* 弹窗 */
-  /* 状态变更 */
-  /deep/ .pop_state_box {
-    .el-dialog {
-      .el-dialog__header {
-        display: none;
+    padding: 24px;
+    .e_line {
+      height: 322px;
+      background: #ffffff;
+      border-radius: 4px;
+      position: relative;
+      .title {
+        text-align: left;
+        font-size: 18px;
+        color: #333;
+        position: absolute;
+        top: 12px;
+        left: 24px;
       }
+    }
+    .alert_risk {
+      border-radius: 4px;
+      margin-top: 20px;
+      padding: 20px 24px;
+      height: auto;
+      background: #fff;
+      text-align: left;
+    }
 
-      .el-dialog__body {
-        height: 260px;
-        padding: 30px;
-
-        .closed_img {
-          position: absolute;
-          top: -18px;
-          right: -18px;
-          cursor: pointer;
-          width: 46px;
-          height: 46px;
+    /* 弹窗 */
+    /* 状态变更 */
+    /deep/ .pop_state_box {
+      .el-dialog {
+        .el-dialog__header {
+          display: none;
         }
-
-        .title {
-          height: 24px;
-          line-height: 24px;
-          text-align: left;
-
-          .title_name {
-            font-size: 20px;
-            color: #333333;
+        .el-dialog__body {
+          height: 260px;
+          padding: 30px;
+          .closed_img {
+            position: absolute;
+            top: -18px;
+            right: -18px;
+            cursor: pointer;
+            width: 46px;
+            height: 46px;
+          }
+          .title {
+            height: 24px;
             line-height: 24px;
+            text-align: left;
+            .title_name {
+              font-size: 20px;
+              color: #333333;
+              line-height: 24px;
+            }
+            .mask {
+              width: 24px;
+              height: 0px;
+              border-top: 0px;
+              border-right: 2px solid transparent;
+              border-bottom: 5px solid #0070ff;
+              border-left: 2px solid transparent;
+              transform: rotate3d(0, 0, 1, 90deg);
+              display: inline-block;
+              margin-right: -5px;
+              margin-bottom: 4px;
+              margin-left: -10px;
+            }
           }
 
-          .mask {
-            width: 24px;
-            height: 0px;
-            border-top: 0px;
-            border-right: 2px solid transparent;
-            border-bottom: 5px solid #0070ff;
-            border-left: 2px solid transparent;
-            transform: rotate3d(0, 0, 1, 90deg);
-            display: inline-block;
-            margin-right: -5px;
-            margin-bottom: 4px;
-            margin-left: -10px;
+          .content {
+            height: 112px;
+            padding-top: 36px;
           }
-        }
 
-        .content {
-          height: 128px;
-          padding-top: 48px;
-        }
-
-        .btn_box {
-          height: 42px;
-          text-align: center;
-          margin-bottom: 24px;
-
-          .ok_btn {
-            width: 136px;
+          .btn_box {
             height: 42px;
-            background: #0070ff;
-            color: #fff;
-          }
+            text-align: center;
+            margin-bottom: 24px;
 
-          .cancel_btn {
-            width: 136px;
-            height: 42px;
-            border-color: #0070ff;
-            background: #fff;
-            color: #0070ff;
+            .ok_btn {
+              width: 136px;
+              height: 42px;
+              background: #0070ff;
+              color: #fff;
+            }
+
+            .cancel_btn {
+              width: 136px;
+              height: 42px;
+              border-color: #0070ff;
+              background: #fff;
+              color: #0070ff;
+            }
           }
         }
       }
     }
-  }
 
-  // 编辑工单
-  /deep/ .task_new_box {
-    .el-dialog {
-      .el-dialog__header {
-        display: none;
-      }
-
-      .el-dialog__body {
-        padding: 30px;
-
-        .closed_img {
-          position: absolute;
-          top: -18px;
-          right: -18px;
-          cursor: pointer;
-          width: 46px;
-          height: 46px;
+    // 编辑工单
+    /deep/ .task_new_box {
+      .el-dialog {
+        .el-dialog__header {
+          display: none;
         }
 
-        .title {
-          height: 24px;
-          line-height: 24px;
-          text-align: left;
+        .el-dialog__body {
+          padding: 30px;
 
-          .title_name {
-            font-size: 20px;
-            color: #333333;
+          .closed_img {
+            position: absolute;
+            top: -18px;
+            right: -18px;
+            cursor: pointer;
+            width: 46px;
+            height: 46px;
+          }
+
+          .title {
+            height: 24px;
             line-height: 24px;
+            text-align: left;
+
+            .title_name {
+              font-size: 20px;
+              color: #333333;
+              line-height: 24px;
+            }
+
+            .mask {
+              width: 24px;
+              height: 0px;
+              border-top: 0px;
+              border-right: 2px solid transparent;
+              border-bottom: 5px solid #0070ff;
+              border-left: 2px solid transparent;
+              transform: rotate3d(0, 0, 1, 90deg);
+              display: inline-block;
+              margin-right: -5px;
+              margin-bottom: 4px;
+              margin-left: -10px;
+            }
           }
 
-          .mask {
-            width: 24px;
-            height: 0px;
-            border-top: 0px;
-            border-right: 2px solid transparent;
-            border-bottom: 5px solid #0070ff;
-            border-left: 2px solid transparent;
-            transform: rotate3d(0, 0, 1, 90deg);
-            display: inline-block;
-            margin-right: -5px;
-            margin-bottom: 4px;
-            margin-left: -10px;
-          }
-        }
-
-        .step_box {
-          height: 36px;
-          margin: 20px 0 24px 0;
-          .step_box1 {
-            background-image: url('../../../assets/images/emerge/step1.png');
-            background-repeat: no-repeat;
-            background-size: 100% 100%;
-            width: 120px;
+          .step_box {
             height: 36px;
-            float: left;
-            position: relative;
-            line-height: 36px;
-            text-align: center;
+            margin: 20px 0 24px 0;
+            .step_box1 {
+              background-image: url('../../../assets/images/emerge/step1.png');
+              background-repeat: no-repeat;
+              background-size: 100% 100%;
+              width: 120px;
+              height: 36px;
+              float: left;
+              position: relative;
+              line-height: 36px;
+              text-align: center;
 
-            .step1_span {
-              font-size: 14px;
+              .step1_span {
+                font-size: 14px;
+              }
+
+              .selected_img {
+                position: absolute;
+                left: 0;
+                top: 0;
+              }
             }
 
-            .selected_img {
-              position: absolute;
-              left: 0;
-              top: 0;
+            .step_box2 {
+              width: 120px;
+              height: 36px;
+              background-image: url('../../../assets/images/emerge/step2.png');
+              background-repeat: no-repeat;
+              background-size: 100% 100%;
+              float: left;
+              position: relative;
+              line-height: 36px;
+              text-align: center;
+              margin-left: -10px;
+
+              .step2_span {
+                font-size: 14px;
+              }
+            }
+
+            .step_now {
+              color: #0070ff;
+            }
+
+            .step_past {
+              color: #999999;
             }
           }
 
-          .step_box2 {
-            width: 120px;
-            height: 36px;
-            background-image: url('../../../assets/images/emerge/step2.png');
-            background-repeat: no-repeat;
-            background-size: 100% 100%;
-            float: left;
-            position: relative;
-            line-height: 36px;
-            text-align: center;
-            margin-left: -10px;
+          .task_new_content {
+            /*height: 480px;*/
 
-            .step2_span {
-              font-size: 14px;
-            }
-          }
+            .task_content_box {
+              height: 400px;
+              overflow-y: auto;
+              &::-webkit-scrollbar {
+                /*滚动条整体样式*/
+                width: 6px; /*高宽分别对应横竖滚动条的尺寸*/
+                border-radius: 6px;
+              }
+              &::-webkit-scrollbar-thumb {
+                /*滚动条里面小方块*/
+                border-radius: 6px;
+                background: #a8a8a8;
+              }
+              &::-webkit-scrollbar-track {
+                /*滚动条里面轨道*/
+                border-radius: 6px;
+                background: #f4f4f4;
+              }
 
-          .step_now {
-            color: #0070ff;
-          }
+              .content_top {
+                overflow: hidden;
+                .content_top_left {
+                  float: left;
+                  width: 45%;
 
-          .step_past {
-            color: #999999;
-          }
-        }
+                  .left_item {
+                    margin-bottom: 16px;
+                    display: flex;
 
-        .task_new_content {
-          /*height: 480px;*/
+                    .title {
+                      width: 100px;
+                      line-height: 38px;
 
-          .task_content_box {
-            height: 400px;
-            overflow-y: auto;
-            &::-webkit-scrollbar {
-              /*滚动条整体样式*/
-              width: 6px; /*高宽分别对应横竖滚动条的尺寸*/
-              border-radius: 6px;
-            }
-            &::-webkit-scrollbar-thumb {
-              /*滚动条里面小方块*/
-              border-radius: 6px;
-              background: #a8a8a8;
-            }
-            &::-webkit-scrollbar-track {
-              /*滚动条里面轨道*/
-              border-radius: 6px;
-              background: #f4f4f4;
-            }
+                      .improtant_ico {
+                        color: #ff3a36;
+                      }
+                    }
 
-            .content_top {
-              overflow: hidden;
-              .content_top_left {
-                float: left;
-                width: 45%;
+                    .task_new_input {
+                      flex: 1;
 
-                .left_item {
-                  margin-bottom: 16px;
-                  display: flex;
-
-                  .title {
-                    width: 100px;
-                    line-height: 38px;
-
-                    .improtant_ico {
-                      color: #ff3a36;
+                      .el-input__inner {
+                        height: 38px;
+                      }
                     }
                   }
+                }
 
-                  .task_new_input {
-                    flex: 1;
+                .content_top_right {
+                  float: right;
+                  width: 45%;
 
-                    .el-input__inner {
-                      height: 38px;
+                  .right_item {
+                    margin-bottom: 16px;
+                    display: flex;
+
+                    .title {
+                      width: 100px;
+                      line-height: 38px;
+
+                      .improtant_ico {
+                        color: #ff3a36;
+                      }
+                    }
+
+                    .task_new_input {
+                      flex: 1;
+
+                      .el-input__inner {
+                        height: 38px;
+                      }
                     }
                   }
                 }
               }
 
-              .content_top_right {
-                float: right;
-                width: 45%;
-
-                .right_item {
-                  margin-bottom: 16px;
-                  display: flex;
-
-                  .title {
-                    width: 100px;
-                    line-height: 38px;
-
-                    .improtant_ico {
-                      color: #ff3a36;
-                    }
-                  }
-
-                  .task_new_input {
-                    flex: 1;
-
-                    .el-input__inner {
-                      height: 38px;
-                    }
-                  }
+              .content_remarks {
+                .title {
+                  font-size: 12px;
+                  color: #999999;
                 }
-              }
-            }
 
-            .content_remarks {
-              .title {
-                font-size: 12px;
-                color: #999999;
-              }
-
-              /deep/ .el-textarea {
-                height: 92px;
-                textarea {
-                  resize: none;
+                /deep/ .el-textarea {
                   height: 92px;
-                  font-size: 14px;
-                  color: #333;
-                  font-family: PingFang;
+                  textarea {
+                    resize: none;
+                    height: 92px;
+                    font-size: 14px;
+                    color: #333;
+                    font-family: PingFang;
+                  }
+                }
+                .el-textarea__inner:hover {
+                  border: none;
+                }
+
+                .el-textarea__inner {
+                  border: none;
+                  background: #f8f8f8;
                 }
               }
-              .el-textarea__inner:hover {
-                border: none;
-              }
 
-              .el-textarea__inner {
-                border: none;
-                background: #f8f8f8;
+              .content_table {
+                margin-top: 16px;
+
+                /deep/ .el-table td {
+                  padding: 0;
+                  height: 32px;
+                }
+                /deep/ .el-table th {
+                  padding: 0;
+                  height: 36px;
+                  background: #f8f8f8;
+                  .cell {
+                  }
+                }
+
+                /deep/ .el-pagination {
+                  margin-top: 20px;
+                  text-align: center;
+                }
               }
             }
 
-            .content_table {
-              margin-top: 16px;
+            .btn_box {
+              margin-top: 36px;
+              margin-bottom: 24px;
+              height: 42px;
+              text-align: center;
 
-              /deep/ .el-table td {
-                padding: 0;
-                height: 32px;
+              .cancel_btn {
+                border: 1px solid #0070ff;
+                background: #fff;
+                color: #0070ff;
+                width: 136px;
+                height: 42px;
+                font-size: 16px;
               }
-              /deep/ .el-table th {
-                padding: 0;
-                height: 36px;
-                background: #f8f8f8;
+              .next_btn {
+                background-color: #0070ff;
+                color: #fff;
+                width: 136px;
+                height: 42px;
+                font-size: 16px;
+              }
+            }
+          }
+
+          .task_handle_content {
+            .handle_content_top {
+              height: 42px;
+              text-align: left;
+              .change_btn,
+              .ref {
+                background-color: #0070ff;
+                border-color: #0070ff;
+                width: 136px;
+                height: 42px;
+                color: #fff;
+              }
+
+              .cel {
+                border: 1px solid #0070ff;
+                background: #fff;
+                color: #0070ff;
+                width: 136px;
+                height: 42px;
+                margin-left: 0;
+              }
+            }
+
+            .table_box {
+              margin-top: 24px;
+
+              .table_box_title {
+                height: 38px;
+                li {
+                  height: 38px;
+                  width: 92px;
+                  float: left;
+                  font-size: 14px;
+                  line-height: 38px;
+                  color: #bbbbbb;
+                  text-align: center;
+                  border-top: 2px solid #fff;
+                }
+
+                li.active {
+                  cursor: pointer;
+                  background: #eef6ff;
+                  color: #0070ff;
+                  border-top: 2px solid #0070ff;
+                }
+              }
+              /deep/ .el-table {
+                font-size: 12px;
+                thead.has-gutter {
+                  th {
+                    color: #333333;
+                    background: #f8f8f8;
+                    .cell {
+                    }
+                  }
+                }
                 .cell {
+                  color: #333333;
                 }
               }
 
@@ -1706,211 +2213,211 @@ export default {
                 text-align: center;
               }
             }
-          }
 
-          .btn_box {
-            margin-top: 36px;
-            margin-bottom: 24px;
-            height: 42px;
-            text-align: center;
-
-            .cancel_btn {
-              border: 1px solid #0070ff;
-              background: #fff;
-              color: #0070ff;
-              width: 136px;
+            .btn_box {
+              margin-top: 36px;
+              margin-bottom: 24px;
               height: 42px;
-              font-size: 16px;
-            }
-            .next_btn {
-              background-color: #0070ff;
-              color: #fff;
-              width: 136px;
-              height: 42px;
-              font-size: 16px;
-            }
-          }
-        }
-
-        .task_handle_content {
-          .handle_content_top {
-            height: 42px;
-            text-align: left;
-            .change_btn,
-            .ref {
-              background-color: #0070ff;
-              border-color: #0070ff;
-              width: 136px;
-              height: 42px;
-              color: #fff;
-            }
-
-            .cel {
-              border: 1px solid #0070ff;
-              background: #fff;
-              color: #0070ff;
-              width: 136px;
-              height: 42px;
-              margin-left: 0;
-            }
-          }
-
-          .table_box {
-            margin-top: 24px;
-
-            .table_box_title {
-              height: 38px;
-              li {
-                height: 38px;
-                width: 92px;
-                float: left;
-                font-size: 14px;
-                line-height: 38px;
-                color: #bbbbbb;
-                text-align: center;
-                border-top: 2px solid #fff;
-              }
-
-              li.active {
-                cursor: pointer;
-                background: #eef6ff;
-                color: #0070ff;
-                border-top: 2px solid #0070ff;
-              }
-            }
-            /deep/ .el-table {
-              font-size: 12px;
-              thead.has-gutter {
-                th {
-                  color: #333333;
-                  background: #f8f8f8;
-                  .cell {
-                  }
-                }
-              }
-              .cell {
-                color: #333333;
-              }
-            }
-
-            /deep/ .el-pagination {
-              margin-top: 20px;
               text-align: center;
+
+              .cancel_btn {
+                border: 1px solid #0070ff;
+                background: #fff;
+                color: #0070ff;
+                width: 136px;
+                height: 42px;
+                font-size: 16px;
+              }
+
+              .prev_btn {
+                background-color: #0070ff;
+                color: #fff;
+                width: 136px;
+                height: 42px;
+                font-size: 16px;
+              }
             }
           }
+        }
+      }
+    }
+    //添加到工单
+    /deep/ .pop_state_add {
+      .el-dialog {
+        .el-dialog__header {
+          display: none;
+        }
 
+        .el-dialog__body {
+          /*max-height: 640px;*/
+          padding: 30px;
+
+          .closed_img {
+            position: absolute;
+            top: -18px;
+            right: -18px;
+            cursor: pointer;
+            width: 46px;
+            height: 46px;
+          }
+
+          .title {
+            height: 24px;
+            line-height: 24px;
+            text-align: left;
+
+            .title_name {
+              font-size: 20px;
+              color: #333333;
+              line-height: 24px;
+            }
+
+            .mask {
+              width: 24px;
+              height: 0px;
+              border-top: 0px;
+              border-right: 2px solid transparent;
+              border-bottom: 5px solid #0070ff;
+              border-left: 2px solid transparent;
+              transform: rotate3d(0, 0, 1, 90deg);
+              display: inline-block;
+              margin-right: -5px;
+              margin-bottom: 4px;
+              margin-left: -10px;
+            }
+          }
+          .content {
+            padding-top: 16px;
+          }
           .btn_box {
-            margin-top: 36px;
-            margin-bottom: 24px;
             height: 42px;
             text-align: center;
+            margin-bottom: 10px;
+
+            .ok_btn {
+              width: 136px;
+              height: 42px;
+              background: #0070ff;
+              color: #fff;
+            }
 
             .cancel_btn {
-              border: 1px solid #0070ff;
+              width: 136px;
+              height: 42px;
+              border-color: #0070ff;
               background: #fff;
               color: #0070ff;
-              width: 136px;
-              height: 42px;
-              font-size: 16px;
             }
+          }
 
-            .prev_btn {
-              background-color: #0070ff;
-              color: #fff;
-              width: 136px;
-              height: 42px;
-              font-size: 16px;
+          .el-table__header{
+            .el-checkbox{
+              display: none;
             }
           }
         }
       }
     }
-  }
-
-  //添加到工单
-  /deep/ .pop_state_add {
-    .el-dialog {
-      .el-dialog__header {
-        display: none;
+    /deep/ .pop_box {
+      .el-dialog {
+        background: #ffffff;
+        border-radius: 4px;
+        position: fixed;
+        // top: 200px;
+        left: 50%;
+        transform: translateX(-50%);
       }
-
-      .el-dialog__body {
-        max-height: 640px;
-        padding: 30px;
-
-        .closed_img {
-          position: absolute;
-          top: -18px;
-          right: -18px;
-          cursor: pointer;
-          width: 46px;
-          height: 46px;
-        }
-
-        .title {
-          height: 24px;
-          line-height: 24px;
-          text-align: left;
-
-          .title_name {
-            font-size: 20px;
+    }
+  }
+</style>
+<style lang="less">
+  .s_btn_list {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    width: 308px !important;
+    height: 408px !important;
+    background: #ffffff;
+    padding: 20px 20px !important;
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.24);
+    .s_b_name {
+      height: 30px;
+      line-height: 30px;
+      font-family: PingFangSC-Medium;
+      font-size: 16px;
+      color: #333333;
+      font-weight: bold;
+    }
+    .s_b_list {
+      height: 288px;
+      overflow-y: auto;
+      .item {
+        line-height: 24px;
+        font-family: PingFangSC-Regular;
+        font-size: 16px;
+        color: #333333;
+        /deep/ .el-checkbox {
+          .el-checkbox__label {
+            font-family: PingFangSC-Regular;
+            font-size: 16px;
             color: #333333;
-            line-height: 24px;
-          }
-
-          .mask {
-            width: 24px;
-            height: 0px;
-            border-top: 0px;
-            border-right: 2px solid transparent;
-            border-bottom: 5px solid #0070ff;
-            border-left: 2px solid transparent;
-            transform: rotate3d(0, 0, 1, 90deg);
-            display: inline-block;
-            margin-right: -5px;
-            margin-bottom: 4px;
-            margin-left: -10px;
           }
         }
-
-        .content {
-          padding-top: 48px;
-        }
-
-        .btn_box {
-          height: 42px;
-          text-align: center;
-          margin-bottom: 24px;
-          margin-top: 36px;
-
-          .ok_btn {
-            width: 136px;
-            height: 42px;
-            background: #0070ff;
+      }
+      &::-webkit-scrollbar {
+        /*滚动条整体样式*/
+        width: 4px;
+        /*高宽分别对应横竖滚动条的尺寸*/
+        /* border-radius: 6px;*/
+      }
+      &::-webkit-scrollbar-thumb {
+        /*滚动条里面小方块*/
+        border-radius: 6px;
+        background: #0070ff;
+        /*background: red;*/
+      }
+      &::-webkit-scrollbar-track {
+        /*滚动条里面轨道*/
+        border-radius: 6px;
+        background: #f4f4f4;
+      }
+    }
+    .s_b_group {
+      margin-top: 10px;
+      height: 40px;
+      line-height: 50px;
+      text-align: center;
+      /deep/ .s_bg {
+        font-size: 14px;
+        height: 34px;
+        width: 96px;
+        outline: none;
+        margin-right: 8px;
+        line-height: 0;
+        padding: 0;
+        font-family: PingFangMedium;
+        &.s_bg_submit {
+          color: #fff;
+          background: #0070ff;
+          border: 1px solid #0070ff;
+          &:hover {
             color: #fff;
+            background: #0070ff;
+            border: 1px solid #0070ff;
           }
-
-          .cancel_btn {
-            width: 136px;
-            height: 42px;
-            border-color: #0070ff;
-            background: #fff;
+        }
+        &.s_bg_cancel {
+          color: #0070ff;
+          border: 1px solid #0070ff;
+          background-color: #fff;
+          &:hover {
             color: #0070ff;
+            border: 1px solid #0070ff;
+            background-color: #fff;
           }
         }
       }
     }
   }
-
-  /deep/ .pop_box {
-    .el-dialog {
-      background: #ffffff;
-      border-radius: 4px;
-      position: fixed;
-      // top: 200px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-  }
-}
+   //.el-table th.gutter{display: table-cell!important;}
 </style>

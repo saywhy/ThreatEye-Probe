@@ -1,5 +1,6 @@
 <template>
   <div class="home_overview"
+       v-loading.fullscreen.lock="loading"
        v-cloak>
     <div class="container">
       <!-- 第一排 -->
@@ -90,13 +91,14 @@ import bomLeft from "./vm-home/bom-left";
 import bomMid from "./vm-home/bom-mid";
 import bomRight from "./vm-home/bom-right";
 
-// import sysMonitor from "./vm-home/sys-monitor";
-import imgUrl from "@/assets/images/home/common/img1.png"
 import { eventBus } from '@/components/common/eventBus.js';
+
+import { isSynthetical } from "../../../assets/js/validate";
 export default {
   name: "system_control_move",
   data () {
     return {
+      loading: false,
       top_left: {},
       top_left_show: false,
 
@@ -144,14 +146,26 @@ export default {
             msg,
             data
           } = resp.data;
-          if (status == '602') {
-            this.$message(
-              {
-                message: msg,
-                type: 'warning',
+          if (status != 0) {
+            for (let key in msg) {
+              if (key == 600) {
+                this.$message(
+                  {
+                    message: msg[key],
+                    type: 'warning',
+                  }
+                );
               }
-            );
-            eventBus.$emit('reset')
+              if (key == 602) {
+                this.$message(
+                  {
+                    message: msg[key],
+                    type: 'warning',
+                  }
+                );
+                eventBus.$emit('reset');
+              }
+            }
           }
         })
     },
@@ -167,8 +181,12 @@ export default {
           } = resp.data;
 
           if (status == 0) {
-            this.top_mid = data;
-            this.top_mid_show = true;
+            if (!isSynthetical(data)) {
+              return false;
+            } else {
+              this.top_mid = data;
+              this.top_mid_show = true;
+            }
           }
         })
     },
@@ -182,8 +200,14 @@ export default {
           } = resp.data;
           //console.log(data)
           if (status == 0) {
-            this.top_right = data;
-            this.top_right_show = true;
+
+            if (!isSynthetical(data)) {
+              return false;
+            } else {
+              this.top_right = data;
+              this.top_right_show = true;
+            }
+
           }
         })
     },
@@ -194,6 +218,7 @@ export default {
         }
       })
         .then(response => {
+          this.loading = false;
           let {
             status,
             data
@@ -429,7 +454,7 @@ export default {
             display: inline-block;
           }
           .legend_title {
-            margin-right: 10px;
+            margin-right: 20px;
           }
         }
         // 第一个
@@ -649,5 +674,8 @@ export default {
       }
     }
   }
+}
+.el-loading-mask {
+  z-index: 99999 !important;
 }
 </style>

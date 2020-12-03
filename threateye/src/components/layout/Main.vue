@@ -13,7 +13,8 @@
       ])
     },
     created() {
-      let path = setRedirect(this.roles);
+      let path = setRedirect(this.roles)
+
       this.$router.push(path,() => {});
     },
     updated() {},

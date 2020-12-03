@@ -149,11 +149,15 @@
               </p>
               <div class="item_addrs"
                    v-for="(item,index) in monitor_add.tag_list">
-                <el-input class="select_box"
-                          placeholder="请输入标签"
-                          v-model="item.name"
-                          clearable>
-                </el-input>
+                <el-autocomplete class="inline-input select_box"
+                                 :value="item.name"
+                                 @input="e => item.name = validSe(e)"
+                                 :maxlength='maxlength_num'
+                                 show-word-limit
+                                 :fetch-suggestions="querySearch"
+                                 placement='bottom'
+                                 placeholder="请输入标签"
+                                 @select="handleSelect"></el-autocomplete>
                 <img src="@/assets/images/common/add.png"
                      alt=""
                      class="img_box"
@@ -282,11 +286,20 @@
               </p>
               <div class="item_addrs"
                    v-for="(item,index) in monitor_edit.label_list">
-                <el-input class="select_box"
+                <!-- <el-input class="select_box"
                           placeholder="请输入标签"
                           v-model="item.name"
                           clearable>
-                </el-input>
+                </el-input> -->
+                <el-autocomplete class="inline-input select_box"
+                                 :fetch-suggestions="querySearch"
+                                 placement='bottom'
+                                 :value="item.name"
+                                 @input="e => item.name = validSe(e)"
+                                 :maxlength='maxlength_num'
+                                 show-word-limit
+                                 placeholder="请输入标签"
+                                 @select="handleSelect"></el-autocomplete>
                 <img src="@/assets/images/common/add.png"
                      alt=""
                      class="img_box"
@@ -365,7 +378,6 @@
         </div>
       </el-dialog>
       <!-- 批量导入 -->
-      <!-- <el-dialog class="import_box pop_box" :visible.sync="monitor_state.import" v-loading="monitor_state.import_"> -->
       <el-dialog class="import_box pop_box"
                  :close-on-click-modal="false"
                  :modal-append-to-body="false"
@@ -425,6 +437,7 @@ export default {
   name: "system_control_monitor",
   data () {
     return {
+      maxlength_num: 25,
       area_array: [],
       monitor_data: {},
       cascader_add_if: false,
@@ -448,7 +461,11 @@ export default {
         person: "",
         tag: [],
         selected_cascader_add: [],
-        tag_list: [{ name: '', icon: true }]
+        tag_list: [{ name: '', icon: true }],
+        test: {
+          headquarters: false,
+          server: false
+        }
       },
       monitor_edit: {
         id: '',
@@ -461,6 +478,10 @@ export default {
         ip_segment: [],
         ip_segment_list: [],
         selected_cascader_edit: [],
+        test: {
+          headquarters: false,
+          server: false
+        }
       },
       select_list: [],
       fileList: []
@@ -469,6 +490,9 @@ export default {
   mounted () {
     this.get_data()
     this.check_passwd()
+
+    this.GetLabels();
+
     var options = []
     // 遍历省级
     Object.keys(pca[86]).forEach(function (key) {
@@ -504,14 +528,26 @@ export default {
             msg,
             data
           } = resp.data;
-          if (status == '602') {
-            this.$message(
-              {
-                message: msg,
-                type: 'warning',
+          if(status != 0){
+            for(let key in msg){
+              if(key == 600){
+                this.$message(
+                  {
+                    message: msg[key],
+                    type: 'warning',
+                  }
+                );
               }
-            );
-            eventBus.$emit('reset')
+              if(key == 602){
+                this.$message(
+                  {
+                    message: msg[key],
+                    type: 'warning',
+                  }
+                );
+                eventBus.$emit('reset');
+              }
+            }
           }
         })
     },
@@ -559,7 +595,7 @@ export default {
         }
       })
         .then(response => {
-          console.log(response);
+         // console.log(response);
           this.monitor_data = response.data.data;
           this.monitor_data.data.forEach((item, index) => {
             item.index_cn = index + 1
@@ -584,7 +620,6 @@ export default {
       this.monitor_add.tag_list = [{ name: '', icon: true }]
       this.monitor_add.ip_segment_list = [{ name: '', icon: true }]
       this.cascader_add_if = true;
-      console.log(this.monitor_add.selected_cascader_add);
     },
     add_data () {
       this.monitor_add.tag = [];
@@ -633,7 +668,6 @@ export default {
         return false
       }
       tag_test_str = JSON.stringify(tag_test)
-      console.log(tag_test_str.indexOf("终端") != -1);
       if (tag_test_str.indexOf("总部") != -1 && (tag_test_str.indexOf("分支") != -1)) {
         this.$message(
           {
@@ -671,8 +705,8 @@ export default {
         );
         return false
       }
-      console.log(isRepeat_tag);
-      console.log(isRepeat_ip_segment);
+      //console.log(isRepeat_tag);
+      //console.log(isRepeat_ip_segment);
       this.monitor_add.tag_list.forEach(item => {
         if (item.name != '') {
           this.monitor_add.tag.push(item.name)
@@ -683,6 +717,7 @@ export default {
           this.monitor_add.ip_segment.push(item.name)
         }
       });
+
       this.$axios.post('/yiiapi/ipsegment/set-ip-segment', {
         name: this.monitor_add.name,
         ip_segment: this.monitor_add.ip_segment,
@@ -692,7 +727,7 @@ export default {
         location: this.monitor_add.selected_cascader_add,
       })
         .then(response => {
-          console.log(response);
+          //console.log(response);
           if (response.data.status == 0) {
             this.monitor_state.add = false;
             this.get_data();
@@ -759,7 +794,6 @@ export default {
     edit_box (row) {
       this.monitor_state.edit = true;
       this.cascader_edit_if = true;
-      console.log(row);
       var item_str = JSON.stringify(row);
       var obj_edit = JSON.parse(item_str);
       this.monitor_edit.id = obj_edit.id
@@ -902,7 +936,7 @@ export default {
         location: this.monitor_edit.selected_cascader_edit,
       })
         .then(response => {
-          console.log(response);
+          //console.log(response);
           if (response.data.status == 0) {
             this.monitor_state.edit = false;
             this.get_data();
@@ -935,9 +969,42 @@ export default {
       this.monitor_page.page = val
       this.get_data();
     },
+    GetLabels () {
+      this.$axios
+        .get("/yiiapi/site/get-labels", {
+          params: {
+            label_name: '',
+          },
+        })
+        .then((resp) => {
+          this.restaurants = []
+          resp.data.data.map(item => {
+            this.restaurants.push({
+              value: item.label_name,
+              id: item.id
+            })
+          })
+
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     // 全选择
     handleSelectionChange (val) {
       this.select_list = val
+    },
+    handleSelect () { },
+    querySearch (queryString, cb) {
+      var restaurants = this.restaurants;
+      var results = queryString != '' ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createFilter (queryString) {
+      return (restaurant) => {
+        return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+      };
     },
     // 删除
     del_monitor () {
@@ -965,7 +1032,7 @@ export default {
           }
         })
           .then(response => {
-            console.log(response);
+            //console.log(response);
             if (response.data.status == 0) {
               this.get_data();
               this.$message(

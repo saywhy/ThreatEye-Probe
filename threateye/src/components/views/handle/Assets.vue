@@ -72,7 +72,7 @@
                   class="common_box_list">
             <el-input class="s_key"
                       placeholder="搜索关键词"
-                      v-model="params.key"
+                      v-model.trim="params.key"
                       clearable>
               <i slot="prefix"
                  class="el-input__icon el-icon-search"></i>
@@ -612,6 +612,12 @@ export default {
         ]
       },
       toggle_top_show: true,
+      old_params: {
+        key: "",
+        threat: "",
+        degree: "",
+        status: "",
+      },
       params: {
         key: "",
         threat: "",
@@ -776,14 +782,26 @@ export default {
             msg,
             data
           } = resp.data;
-          if (status == '602') {
-            this.$message(
-              {
-                message: msg,
-                type: 'warning',
+          if(status != 0){
+            for(let key in msg){
+              if(key == 600){
+                this.$message(
+                  {
+                    message: msg[key],
+                    type: 'warning',
+                  }
+                );
               }
-            );
-            eventBus.$emit('reset')
+              if(key == 602){
+                this.$message(
+                  {
+                    message: msg[key],
+                    type: 'warning',
+                  }
+                );
+                eventBus.$emit('reset');
+              }
+            }
           }
         })
     },
@@ -842,7 +860,7 @@ export default {
       let params = { threat: 0, label: [] };
 
       //失陷确定性处置
-      if (this.params.threat != '') {
+      if (this.old_params.threat != '') {
         params.threat = 1;
       }
       //标签处置
@@ -853,14 +871,16 @@ export default {
 
       params.label = JSON.stringify(params.label);
 
+
       this.$axios.get('/yiiapi/alert/risk-asset',
         {
           params: {
-            label: params.label,
-            key_word: this.params.key,
+            key_word: this.old_params.key,
+            degree: this.old_params.degree,
+            status: this.old_params.status,
             fall_certainty: params.threat,
-            degree: this.params.degree,
-            status: this.params.status,
+
+            label: params.label,
             page: this.table.pageNow,
             rows: this.table.eachPage
           }
@@ -909,12 +929,10 @@ export default {
 
 
       if (!this.search_flag) {
-        this.params = {
-          key: "",
-          threat: "",
-          degree: "",
-          status: "",
-        };
+        this.params.key = '';
+        this.params.threat = '';
+        this.params.degree = '';
+        this.params.status = '';
       }
 
       this.get_list_risk();
@@ -928,12 +946,10 @@ export default {
       this.assets_all.tags.splice(index, 1);
 
       if (!this.search_flag) {
-        this.params = {
-          key: "",
-          threat: "",
-          degree: "",
-          status: "",
-        };
+        this.params.key = '';
+        this.params.threat = '';
+        this.params.degree = '';
+        this.params.status = '';
       }
 
       this.get_list_risk();
@@ -955,11 +971,20 @@ export default {
     //搜索按鈕點擊事件
     submitClick () {
       this.search_flag = true;
+      this.table.pageNow = 1;
+
+      this.old_params.key = this.params.key;
+      this.old_params.threat = this.params.threat;
+      this.old_params.degree = this.params.degree;
+      this.old_params.status = this.params.status;
+
       this.get_list_risk();
     },
 
     //重置按鈕點擊事件
     resetClick () {
+
+      this.table.pageNow = 1;
       //清空选中全部资产
       this.assets_all.tags = [];
 
@@ -969,12 +994,17 @@ export default {
       this.assets_all.base[2].value.map(item => item.flag = false);
       this.assets_all.base[3].value.map(item => item.flag = false);
       this.assets_all.base[4].value.map(item => item.flag = false);
-      this.params = {
-        key: "",
-        threat: "",
-        degree: "",
-        status: "",
-      };
+
+      this.params.key = '';
+      this.params.threat = '';
+      this.params.degree = '';
+      this.params.status = '';
+
+      this.old_params.key = this.params.key;
+      this.old_params.threat = this.params.threat;
+      this.old_params.degree = this.params.degree;
+      this.old_params.status = this.params.status;
+
       this.get_list_risk();
     },
 
