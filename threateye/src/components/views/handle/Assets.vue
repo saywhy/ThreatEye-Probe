@@ -782,26 +782,22 @@ export default {
             msg,
             data
           } = resp.data;
-          if(status != 0){
-            for(let key in msg){
-              if(key == 600){
-                this.$message(
-                  {
-                    message: msg[key],
-                    type: 'warning',
-                  }
-                );
+          if (status == '602') {
+            this.$message(
+              {
+                message: msg,
+                type: 'warning',
               }
-              if(key == 602){
-                this.$message(
-                  {
-                    message: msg[key],
-                    type: 'warning',
-                  }
-                );
-                eventBus.$emit('reset');
+            );
+            eventBus.$emit('reset')
+          }
+          if (status == '600') {
+            this.$message(
+              {
+                message: msg,
+                type: 'warning',
               }
-            }
+            );
           }
         })
     },
@@ -1057,7 +1053,7 @@ export default {
             if (Object.keys(this.detail_click_column).length != 0 && this.detail_click_column.type != 'selection') {
               this.$router.push({
                 path: '/detail/assets', name: 'detail_assets',
-                query: { id: this.detail_click_val.id, asset_ip: this.detail_click_val.asset_ip, status: this.detail_click_val.status,type:"assets" }
+                query: { id: this.detail_click_val.id, asset_ip: this.detail_click_val.asset_ip, status: this.detail_click_val.status, type: "assets" }
               });
             }
           } else {

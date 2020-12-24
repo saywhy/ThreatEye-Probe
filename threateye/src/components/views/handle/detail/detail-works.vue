@@ -189,10 +189,10 @@
                                  :prop="dropCol[index].prop"
                                  :label="item.label">
                   <template slot-scope="scope">
-                  <span class="btn_alert_background"
-                        :class="{'high_background':scope.row.degree =='高',
+                    <span class="btn_alert_background"
+                          :class="{'high_background':scope.row.degree =='高',
                         'mid_background':scope.row.degree =='中','low_background':scope.row.degree =='低'}">
-                    {{ scope.row.degree | degree_sino }}</span>
+                      {{ scope.row.degree | degree_sino }}</span>
                   </template>
                 </el-table-column>
                 <!--失陷确定性-->
@@ -202,8 +202,8 @@
                                  :prop="dropCol[index].prop"
                                  :label="item.label">
                   <template slot-scope="scope">
-                  <span :class="{'fall_certainty':scope.row.fall_certainty == '1'}">
-                    {{ scope.row.fall_certainty | certainty }}</span>
+                    <span :class="{'fall_certainty':scope.row.fall_certainty == '1'}">
+                      {{ scope.row.fall_certainty | certainty }}</span>
                   </template>
                 </el-table-column>
                 <!--状态-->
@@ -335,17 +335,17 @@ export default {
       dropCol: [],
       //告警列表
       fieldList: [{ checked: true, disabled: true, name: "告警时间", alias: 'alert_time' },
-        { checked: true, disabled: true, name: "告警类型", alias: 'category' },
-        { checked: true, disabled: true, name: "源地址", alias: 'src_ip' },
-        { checked: true, disabled: true, name: "目的地址", alias: 'dest_ip' },
-        { checked: true, disabled: false, name: "威胁指标", alias: 'indicator' },
-        { checked: true, disabled: false, name: "应用", alias: 'application' },
-        { checked: true, disabled: false, name: "威胁等级", alias: 'degree' },
-        { checked: true, disabled: false, name: "失陷确定性", alias: 'fall_certainty' },
-        { checked: false, disabled: false, name: "更新时间", alias: 'updated_at' },
-        { checked: false, disabled: false, name: "告警次数", alias: 'alert_count' },
-        { checked: false, disabled: false, name: "标签", alias: 'labels' },
-        { checked: true, disabled: false, name: "状态", alias: 'status' }],
+      { checked: true, disabled: true, name: "告警类型", alias: 'category' },
+      { checked: true, disabled: true, name: "源地址", alias: 'src_ip' },
+      { checked: true, disabled: true, name: "目的地址", alias: 'dest_ip' },
+      { checked: true, disabled: false, name: "威胁指标", alias: 'indicator' },
+      { checked: true, disabled: false, name: "应用", alias: 'application' },
+      { checked: true, disabled: false, name: "威胁等级", alias: 'degree' },
+      { checked: true, disabled: false, name: "失陷确定性", alias: 'fall_certainty' },
+      { checked: false, disabled: false, name: "更新时间", alias: 'updated_at' },
+      { checked: false, disabled: false, name: "告警次数", alias: 'alert_count' },
+      { checked: false, disabled: false, name: "标签", alias: 'labels' },
+      { checked: true, disabled: false, name: "状态", alias: 'status' }],
     };
   },
 
@@ -370,26 +370,22 @@ export default {
             msg,
             data
           } = resp.data;
-          if(status != 0){
-            for(let key in msg){
-              if(key == 600){
-                this.$message(
-                  {
-                    message: msg[key],
-                    type: 'warning',
-                  }
-                );
+          if (status == '602') {
+            this.$message(
+              {
+                message: msg,
+                type: 'warning',
               }
-              if(key == 602){
-                this.$message(
-                  {
-                    message: msg[key],
-                    type: 'warning',
-                  }
-                );
-                eventBus.$emit('reset');
+            );
+            eventBus.$emit('reset')
+          }
+          if (status == '600') {
+            this.$message(
+              {
+                message: msg,
+                type: 'warning',
               }
-            }
+            );
           }
         })
     },
@@ -470,7 +466,7 @@ export default {
               this.table.tabsFlag = 1;
 
               data.alerts.data.map(v => {
-                if(v.labels){v.labels = v.labels.join(',');}
+                if (v.labels) { v.labels = v.labels.join(','); }
               });
 
               this.table.tableData = data.alerts.data;
@@ -486,7 +482,7 @@ export default {
     },
 
     //获取列
-    column_deploy(){
+    column_deploy () {
       this.$axios.get('/yiiapi/site/field-list')
         .then((resp) => {
           this.dropCol = [];

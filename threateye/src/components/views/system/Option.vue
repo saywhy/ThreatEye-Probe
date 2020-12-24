@@ -70,16 +70,16 @@
           <span>分析平台设置</span>
         </p>
         <div style="margin-bottom:24px;">
-          <div class="item_addrs">
-            <span>IP地址:</span>
+          <div class="item_platfrom">
+            <span class='title'>IP地址:</span>
             <el-input class="select_box"
                       placeholder="请输入IP地址"
                       v-model="platfrom.IPADDR"
                       clearable>
             </el-input>
           </div>
-          <div class="item_addrs">
-            <span>端口:</span>
+          <div class="item_platfrom">
+            <span class='title'>端口:</span>
             <el-input class="select_box"
                       placeholder="请输入端口"
                       v-model="platfrom.PORT"
@@ -89,7 +89,7 @@
         </div>
         <el-button type="primary"
                    class="btn_i"
-                   @click="edit_login_ip">保存</el-button>
+                   @click="edit_platfrom">保存</el-button>
       </div>
 
       <div class="bottom">
@@ -334,26 +334,22 @@ export default {
             msg,
             data
           } = resp.data;
-          if(status != 0){
-            for(let key in msg){
-              if(key == 600){
-                this.$message(
-                  {
-                    message: msg[key],
-                    type: 'warning',
-                  }
-                );
+          if (status == '602') {
+            this.$message(
+              {
+                message: msg,
+                type: 'warning',
               }
-              if(key == 602){
-                this.$message(
-                  {
-                    message: msg[key],
-                    type: 'warning',
-                  }
-                );
-                eventBus.$emit('reset');
+            );
+            eventBus.$emit('reset')
+          }
+          if (status == '600') {
+            this.$message(
+              {
+                message: msg,
+                type: 'warning',
               }
-            }
+            );
           }
         })
     },
@@ -560,6 +556,27 @@ export default {
         .catch(error => {
           console.log(error);
         })
+    },
+    edit_platfrom () {
+      this.$axios.put('/yiiapi/seting/set-platform-ip', {
+        "IPADDR": this.platfrom.IPADDR,
+        "PORT": this.platfrom.PORT
+      })
+        .then(response => {
+          let { status, data } = response.data;
+          if (status == 0) {
+            this.get_platfrom();
+            this.$message(
+              {
+                message: '设置成功',
+                type: 'success',
+              }
+            );
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        })
     }
   }
 }
@@ -623,12 +640,6 @@ export default {
         }
       }
     }
-    // .mid {
-    //   margin: 12px 0;
-    //   padding: 24px 0 24px 24px;
-    //   background: #fff;
-    //   border-radius: 4px;
-    // }
     .bottom {
       margin: 12px 0;
       padding: 24px 0 24px 24px;
@@ -636,6 +647,18 @@ export default {
       border-radius: 4px;
       .item_addrs {
         margin-bottom: 12px;
+      }
+      .item_platfrom {
+        width: 480px;
+        display: flex;
+        margin-bottom: 12px;
+        .title {
+          width: 80px;
+        }
+        .select_box {
+          flex: 1;
+          border: 0;
+        }
       }
       .img_box {
         width: 16px;

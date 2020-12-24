@@ -1302,17 +1302,17 @@ export default {
       dropCol: [],
       //告警列表
       fieldList: [{ checked: true, disabled: true, name: "告警时间", alias: 'alert_time' },
-        { checked: true, disabled: true, name: "告警类型", alias: 'category' },
-        { checked: true, disabled: true, name: "源地址", alias: 'src_ip' },
-        { checked: true, disabled: true, name: "目的地址", alias: 'dest_ip' },
-        { checked: true, disabled: false, name: "威胁指标", alias: 'indicator' },
-        { checked: true, disabled: false, name: "应用", alias: 'application' },
-        { checked: true, disabled: false, name: "威胁等级", alias: 'degree' },
-        { checked: true, disabled: false, name: "失陷确定性", alias: 'fall_certainty' },
-        { checked: false, disabled: false, name: "更新时间", alias: 'updated_at' },
-        { checked: false, disabled: false, name: "告警次数", alias: 'alert_count' },
-        { checked: false, disabled: false, name: "标签", alias: 'labels' },
-        { checked: true, disabled: false, name: "状态", alias: 'status' }],
+      { checked: true, disabled: true, name: "告警类型", alias: 'category' },
+      { checked: true, disabled: true, name: "源地址", alias: 'src_ip' },
+      { checked: true, disabled: true, name: "目的地址", alias: 'dest_ip' },
+      { checked: true, disabled: false, name: "威胁指标", alias: 'indicator' },
+      { checked: true, disabled: false, name: "应用", alias: 'application' },
+      { checked: true, disabled: false, name: "威胁等级", alias: 'degree' },
+      { checked: true, disabled: false, name: "失陷确定性", alias: 'fall_certainty' },
+      { checked: false, disabled: false, name: "更新时间", alias: 'updated_at' },
+      { checked: false, disabled: false, name: "告警次数", alias: 'alert_count' },
+      { checked: false, disabled: false, name: "标签", alias: 'labels' },
+      { checked: true, disabled: false, name: "状态", alias: 'status' }],
     };
   },
 
@@ -1338,26 +1338,22 @@ export default {
             msg,
             data
           } = resp.data;
-          if(status != 0){
-            for(let key in msg){
-              if(key == 600){
-                this.$message(
-                  {
-                    message: msg[key],
-                    type: 'warning',
-                  }
-                );
+          if (status == '602') {
+            this.$message(
+              {
+                message: msg,
+                type: 'warning',
               }
-              if(key == 602){
-                this.$message(
-                  {
-                    message: msg[key],
-                    type: 'warning',
-                  }
-                );
-                eventBus.$emit('reset');
+            );
+            eventBus.$emit('reset')
+          }
+          if (status == '600') {
+            this.$message(
+              {
+                message: msg,
+                type: 'warning',
               }
-            }
+            );
           }
         })
     },
@@ -1397,7 +1393,7 @@ export default {
             data.new_department = data.label.department;
             data.new_business = data.label.business;
 
-           // console.log(data)
+            // console.log(data)
             ///
             if (data.workorder_id == '0') {
               data.new_workorder_status = '未关联工单';
@@ -1495,7 +1491,7 @@ export default {
     },
 
     //获取列
-    column_deploy(){
+    column_deploy () {
       this.$axios.get('/yiiapi/site/field-list')
         .then((resp) => {
           this.dropCol = [];

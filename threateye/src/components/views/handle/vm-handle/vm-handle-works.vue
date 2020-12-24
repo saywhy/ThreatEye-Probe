@@ -662,11 +662,14 @@
                             style="width: 100%">
                     <el-table-column align="center"
                                      width="50">
-                      <template slot="header" slot-scope="scope">
-                        <el-checkbox v-model="edit.checked_all" @click.prevent.stop.native="checked_all_assets()"></el-checkbox>
+                      <template slot="header"
+                                slot-scope="scope">
+                        <el-checkbox v-model="edit.checked_all"
+                                     @click.prevent.stop.native="checked_all_assets()"></el-checkbox>
                       </template>
                       <template slot-scope="scope">
-                        <el-checkbox v-model="scope.row.checked" @click.prevent.stop.native="handle_selected_assets(scope.row.checked,scope.row.id)" ></el-checkbox>
+                        <el-checkbox v-model="scope.row.checked"
+                                     @click.prevent.stop.native="handle_selected_assets(scope.row.checked,scope.row.id)"></el-checkbox>
                       </template>
                     </el-table-column>
                     <el-table-column prop="asset_ip"
@@ -713,12 +716,14 @@
                             style="width: 100%">
                     <el-table-column align="center"
                                      width="50">
-                      <template slot="header" slot-scope="scope">
-                        <el-checkbox v-model="edit.checked_all" @click.prevent.stop.native="checked_all_alert()" ></el-checkbox>
+                      <template slot="header"
+                                slot-scope="scope">
+                        <el-checkbox v-model="edit.checked_all"
+                                     @click.prevent.stop.native="checked_all_alert()"></el-checkbox>
                       </template>
                       <template slot-scope="scope">
                         <el-checkbox v-model="scope.row.checked"
-                                     @click.prevent.stop.native="handle_selected_alert(scope.row.checked,scope.row.id)" ></el-checkbox>
+                                     @click.prevent.stop.native="handle_selected_alert(scope.row.checked,scope.row.id)"></el-checkbox>
                       </template>
                     </el-table-column>
                     <el-table-column prop="category"
@@ -796,7 +801,7 @@
 import VmEmergePicker from "@/components/common/vm-emerge-picker";
 import { eventBus } from '@/components/common/eventBus.js';
 
-import {isRealNum} from "@/assets/js/validate";
+import { isRealNum } from "@/assets/js/validate";
 export default {
   name: 'vm-handle-tabs',
   props: {
@@ -991,7 +996,7 @@ export default {
         // 告警和资产数组
         asset_list: {},
         alert_list: {},
-        checked_all:false,
+        checked_all: false,
         page: 1,
         rows: 10
       }
@@ -1071,26 +1076,22 @@ export default {
             msg,
             data
           } = resp.data;
-          if(status != 0){
-            for(let key in msg){
-              if(key == 600){
-                this.$message(
-                  {
-                    message: msg[key],
-                    type: 'warning',
-                  }
-                );
+          if (status == '602') {
+            this.$message(
+              {
+                message: msg,
+                type: 'warning',
               }
-              if(key == 602){
-                this.$message(
-                  {
-                    message: msg[key],
-                    type: 'warning',
-                  }
-                );
-                eventBus.$emit('reset');
+            );
+            eventBus.$emit('reset')
+          }
+          if (status == '600') {
+            this.$message(
+              {
+                message: msg,
+                type: 'warning',
               }
-            }
+            );
           }
         })
     },
@@ -1799,9 +1800,9 @@ export default {
 
 
               //ycl添加（09/14）
-              if(this.edit.table_operator.length == 1){
+              if (this.edit.table_operator.length == 1) {
                 this.task_params.operator = this.edit.data.perator[0];
-              }else {
+              } else {
                 this.task_params.operator = '';
               }
               //ycl添加（09/14）
@@ -1979,10 +1980,10 @@ export default {
             });
 
             //判断多选是否勾选
-            if(checked_all_attr.length ==
-              this.edit.asset_list.data.length){
+            if (checked_all_attr.length ==
+              this.edit.asset_list.data.length) {
               this.edit.checked_all = true;
-            }else {
+            } else {
               this.edit.checked_all = false;
             }
           });
@@ -1993,34 +1994,34 @@ export default {
       console.log('我是复选');
       let flag = this.edit.checked_all;
       this.edit.checked_all = !this.edit.checked_all;
-      if(flag){
+      if (flag) {
         this.edit.asset_list.data.forEach(item => {
           item.checked = false;
-          if(this.selected_list.includes(Number(item.id))){
+          if (this.selected_list.includes(Number(item.id))) {
             this.selected_list.splice(this.selected_list.findIndex(item_id =>
               item_id == item.id), 1);
           }
         });
-      }else {
+      } else {
         this.edit.asset_list.data.forEach(item => {
           item.checked = true;
-          if(!this.selected_list.includes(Number(item.id))){
+          if (!this.selected_list.includes(Number(item.id))) {
             this.selected_list.push(Number(item.id));
           }
         });
       }
     },
     //单选资产id处理
-    handle_selected_assets(flag,id) {
+    handle_selected_assets (flag, id) {
       console.log('单选')
       this.edit.asset_list.data.forEach(item => {
         if (item.id == id) {
           item.checked = !item.checked;
         }
       });
-      if(!flag){
+      if (!flag) {
         this.selected_list.push(Number(id));
-      }else {
+      } else {
         this.selected_list.splice(this.selected_list.findIndex(item_id =>
           item_id == id), 1);
       }
@@ -2032,10 +2033,10 @@ export default {
           return item.checked == true;
         });
 
-      if(checked_all_attr.length ==
-        this.edit.asset_list.data.length){
+      if (checked_all_attr.length ==
+        this.edit.asset_list.data.length) {
         this.edit.checked_all = true;
-      }else {
+      } else {
         this.edit.checked_all = false;
       }
     },
@@ -2046,7 +2047,7 @@ export default {
     },
     /***************************告警*******************************/
     //获取全部告警列表
-    get_list_alert (){
+    get_list_alert () {
       this.$axios.get('/yiiapi/workorder/alert-list', {
         params: {
           page: this.edit.page,
@@ -2082,48 +2083,48 @@ export default {
             });
 
             //判断多选是否勾选
-            if(checked_all_attr.length ==
-              this.edit.alert_list.data.length){
+            if (checked_all_attr.length ==
+              this.edit.alert_list.data.length) {
               this.edit.checked_all = true;
-            }else {
+            } else {
               this.edit.checked_all = false;
             }
           });
         });
     },
     //复选告警id处理
-    checked_all_alert(){
+    checked_all_alert () {
       console.log('我是复选');
       let flag = this.edit.checked_all;
       this.edit.checked_all = !this.edit.checked_all;
-      if(flag){
+      if (flag) {
         this.edit.alert_list.data.forEach(item => {
           item.checked = false;
-          if(this.selected_list.includes(Number(item.id))){
+          if (this.selected_list.includes(Number(item.id))) {
             this.selected_list.splice(this.selected_list.findIndex(item_id =>
               item_id == item.id), 1);
           }
         });
-      }else {
+      } else {
         this.edit.alert_list.data.forEach(item => {
           item.checked = true;
-          if(!this.selected_list.includes(Number(item.id))){
+          if (!this.selected_list.includes(Number(item.id))) {
             this.selected_list.push(Number(item.id));
           }
         });
       }
     },
     //单选告警id处理
-    handle_selected_alert(flag,id) {
+    handle_selected_alert (flag, id) {
       console.log('单选')
       this.edit.alert_list.data.forEach(item => {
         if (item.id == id) {
           item.checked = !item.checked;
         }
       });
-      if(!flag){
+      if (!flag) {
         this.selected_list.push(Number(id));
-      }else {
+      } else {
         this.selected_list.splice(this.selected_list.findIndex(item_id =>
           item_id == id), 1);
       }
@@ -2134,10 +2135,10 @@ export default {
         return item.checked == true;
       });
 
-      if(checked_all_attr.length ==
-        this.edit.alert_list.data.length){
+      if (checked_all_attr.length ==
+        this.edit.alert_list.data.length) {
         this.edit.checked_all = true;
-      }else {
+      } else {
         this.edit.checked_all = false;
       }
     },
@@ -2153,7 +2154,7 @@ export default {
         this.edit.perator.push(element.username)
       });
       this.selected_list = this.selected_list.map(v => {
-        if(isRealNum(v)){
+        if (isRealNum(v)) {
           v = v.toString();
         }
         return v;
@@ -2186,13 +2187,13 @@ export default {
         // }
         all_params.te_alert = handle_sel_list
       }
-      if(this.edit.data.type == 'asset'){
-        if(handle_sel_list.length == 0){
+      if (this.edit.data.type == 'asset') {
+        if (handle_sel_list.length == 0) {
           this.$message({ message: '请至少选择一条资产！', type: 'warning' });
           return false;
         }
-      }else {
-        if(handle_sel_list.length == 0){
+      } else {
+        if (handle_sel_list.length == 0) {
           this.$message({ message: '请至少选择一条告警！', type: 'warning' });
           return false;
         }
@@ -2223,7 +2224,7 @@ export default {
         this.edit.perator.push(element.username)
       });
       this.selected_list = this.selected_list.map(v => {
-        if(isRealNum(v)){
+        if (isRealNum(v)) {
           v = v.toString();
         }
         return v;
